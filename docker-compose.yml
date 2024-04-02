@@ -1,0 +1,43 @@
+version: '3.8'
+
+networks:
+  app-net:
+
+services:
+  postgresql:
+    image: postgres:16.2
+    container_name: postgresql
+    networks:
+      - app-net
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: go_admin
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes:
+      - ~/db/postgresql/data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7.2.4
+    container_name: redis
+    networks:
+      - app-net
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  go-admin:
+    build:
+      context: .
+    container_name: go-admin
+    networks:
+      - app-net
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql
+      - redis
