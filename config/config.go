@@ -11,7 +11,7 @@ import (
 
 var Raw = koanf.New(".")
 
-func init() {
+func Setup() {
 	err := Raw.Load(file.Provider(".env"), dotenv.Parser())
 	if err != nil {
 		log.Fatalf("error loading config: %v", err)
