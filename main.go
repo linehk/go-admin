@@ -6,13 +6,15 @@ import (
 	"time"
 
 	"github.com/linehk/go-admin/config"
+	"github.com/linehk/go-admin/model"
 	"github.com/linehk/go-admin/router"
 )
 
 func main() {
 	config.Setup()
+	model.Setup()
 	handler := router.Setup()
-	
+
 	server := &http.Server{
 		Addr:           config.Raw.String("ADDR"),
 		Handler:        handler,
