@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"context"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -21,9 +20,7 @@ func (*UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx := context.Background()
-
-	userModel, err := model.DB.CreateUser(ctx, model.CreateUserParams{
+	userModel, err := model.DB.CreateUser(r.Context(), model.CreateUserParams{
 		Username: *user.Username,
 		Password: *user.Password,
 	})
