@@ -9,7 +9,7 @@ import (
 	"github.com/linehk/go-admin/config"
 )
 
-var Query *Queries
+var DB *Queries
 
 func Setup() {
 	DSN := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
@@ -22,5 +22,5 @@ func Setup() {
 	if err != nil {
 		log.Fatalf("can't open database err: %v", err)
 	}
-	Query = New(conn)
+	DB = New(conn)
 }
