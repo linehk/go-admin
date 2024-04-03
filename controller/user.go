@@ -9,9 +9,12 @@ import (
 )
 
 type UserImpl struct {
+	DB *model.Queries
 }
 
-func (*UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
+func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
 	var user PostApiV1UsersJSONRequestBody
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
@@ -20,7 +23,7 @@ func (*UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userModel, err := model.DB.CreateUser(r.Context(), model.CreateUserParams{
+	userModel, err := u.DB.CreateUser(r.Context(), model.CreateUserParams{
 		Username: *user.Username,
 		Password: *user.Password,
 	})
@@ -42,8 +45,9 @@ func (*UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (*UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {}
+func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {
+}
 
-func (*UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}
+func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}
 
-func (*UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}
+func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}

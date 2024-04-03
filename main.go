@@ -7,12 +7,10 @@ import (
 
 	"github.com/linehk/go-admin/config"
 	"github.com/linehk/go-admin/controller"
-	"github.com/linehk/go-admin/model"
 )
 
 func main() {
 	config.Setup()
-	model.Setup()
 	handler := controller.Setup()
 
 	server := &http.Server{
