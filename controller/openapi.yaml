@@ -110,6 +110,22 @@ components:
       properties:
         username:
           type: string
+          maxLength: 64
         password:
           type: string
+          maxLength: 64
+        email:
+          type: string
+          maxLength: 128
+        phone:
+          type: string
+          maxLength: 32
+        remark:
+          type: string
+          maxLength: 1024
+        status:
+          type: string
+          enum:
+            - activated
+            - frozen
       type: object
