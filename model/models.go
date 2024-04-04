@@ -4,8 +4,71 @@
 
 package model
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
 type AppUser struct {
-	ID       int64
+	ID       int32
 	Username string
 	Password string
+	Name     string
+	Email    string
+	Phone    string
+	Remark   string
+	Status   string
+	Created  pgtype.Timestamp
+	Updated  pgtype.Timestamp
+}
+
+type Menu struct {
+	ID          int32
+	Code        string
+	Name        string
+	Description string
+	Sequence    int16
+	Type        string
+	Path        string
+	Property    string
+	ParentID    int32
+	ParentPath  string
+	Status      string
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
+}
+
+type Resource struct {
+	ID      int32
+	MenuID  int32
+	Method  string
+	Path    string
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+type Role struct {
+	ID          int32
+	Code        string
+	Name        string
+	Description string
+	Sequence    int16
+	Status      string
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
+}
+
+type RoleMenu struct {
+	ID      int32
+	RoleID  int32
+	MenuID  int32
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+type UserRole struct {
+	ID      int32
+	UserID  int32
+	RoleID  int32
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
 }
