@@ -7,6 +7,7 @@ import (
 
 	"github.com/linehk/go-admin/config"
 	"github.com/linehk/go-admin/model"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Setup() *http.ServeMux {
@@ -22,4 +23,9 @@ func Setup() *http.ServeMux {
 	}
 	HandlerWithOptions(userImpl, options)
 	return mux
+}
+
+func hash(password string) (string, error) {
+	h, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	return string(h), err
 }

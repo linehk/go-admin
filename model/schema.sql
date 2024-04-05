@@ -7,16 +7,16 @@ CREATE TABLE app_user (
   phone VARCHAR NOT NULL,
   remark VARCHAR NOT NULL,
   status VARCHAR NOT NULL,
-  created TIMESTAMP,
-  updated TIMESTAMP
+  created TIMESTAMP NOT NULL,
+  updated TIMESTAMP NOT NULL
 );
 
 CREATE TABLE user_role (
   id SERIAL PRIMARY KEY,
   user_id SERIAL NOT NULL,
   role_id SERIAL NOT NULL,
-  created TIMESTAMP,
-  updated TIMESTAMP
+  created TIMESTAMP NOT NULL,
+  updated TIMESTAMP NOT NULL
 );
 
 CREATE TABLE role (
@@ -26,16 +26,16 @@ CREATE TABLE role (
   description VARCHAR NOT NULL,
   sequence SMALLINT NOT NULL,
   status VARCHAR NOT NULL,
-  created TIMESTAMP,
-  updated TIMESTAMP
+  created TIMESTAMP NOT NULL,
+  updated TIMESTAMP NOT NULL
 );
 
 CREATE TABLE role_menu (
   id SERIAL PRIMARY KEY,
   role_id SERIAL NOT NULL,
   menu_id SERIAL NOT NULL,
-  created TIMESTAMP,
-  updated TIMESTAMP
+  created TIMESTAMP NOT NULL,
+  updated TIMESTAMP NOT NULL
 );
 
 CREATE TABLE menu (
@@ -50,8 +50,8 @@ CREATE TABLE menu (
   parent_id SERIAL NOT NULL,
   parent_path VARCHAR NOT NULL,
   status VARCHAR NOT NULL,
-  created TIMESTAMP,
-  updated TIMESTAMP
+  created TIMESTAMP NOT NULL,
+  updated TIMESTAMP NOT NULL
 );
 
 CREATE TABLE resource (
@@ -59,6 +59,6 @@ CREATE TABLE resource (
   menu_id SERIAL NOT NULL,
   method VARCHAR NOT NULL,
   path VARCHAR NOT NULL,
-  created TIMESTAMP,
-  updated TIMESTAMP
+  created TIMESTAMP NOT NULL,
+  updated TIMESTAMP NOT NULL
 );

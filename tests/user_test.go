@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -18,10 +19,21 @@ import (
 )
 
 func TestPostApiV1Users(t *testing.T) {
-	reqBody := "{\"password\":\"password\",\"username\":\"username\"}\n"
-	req := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBody))
+	reqBodyJSON := `{
+"username": "username1",
+"password": "password1",
+"name": "name1",
+"email": "email@gamil.com1",
+"phone": "18682635684",
+"remark": "remark1",
+"status": "activated",
+"created": "2024-04-04 13:56:35.671521",
+"updated": "2024-04-05 13:56:35.671521"
+}`
+	req := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON))
+	var reqBody controller.PostApiV1UsersJSONRequestBody
+	_ = json.NewDecoder(strings.NewReader(reqBodyJSON)).Decode(&reqBody)
 	w := httptest.NewRecorder()
-
 	ctx := context.Background()
 	pg, err := postgres.RunContainer(ctx,
 		testcontainers.WithImage("postgres:16.2"),
@@ -35,16 +47,30 @@ func TestPostApiV1Users(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
 		t.Error(err)
 	}
-
 	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
-
 	userImpl.PostApiV1Users(w, req)
-	actual := w.Body.String()
-	expected := "{\"password\":\"password\",\"username\":\"username\"}\n"
+	var actual controller.User
+	_ = json.NewDecoder(w.Body).Decode(&actual)
+	name := "name1"
+	email := "email@gamil.com1"
+	phone := "18682635684"
+	remark := "remark1"
+	status := controller.Activated
+	created := "2024-04-04 13:56:35.671521"
+	updated := "2024-04-05 13:56:35.671521"
+	expected := controller.User{
+		Username: "username1",
+		Name:     &name,
+		Email:    &email,
+		Phone:    &phone,
+		Remark:   &remark,
+		Status:   &status,
+		Created:  &created,
+		Updated:  &updated,
+	}
 	assert.Equal(t, expected, actual)
 }

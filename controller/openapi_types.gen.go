@@ -17,22 +17,43 @@ type Error struct {
 
 // User defines model for User.
 type User struct {
+	Created  *string     `json:"created,omitempty"`
 	Email    *string     `json:"email,omitempty"`
-	Password *string     `json:"password,omitempty"`
+	Name     *string     `json:"name,omitempty"`
+	Password string      `json:"password"`
 	Phone    *string     `json:"phone,omitempty"`
 	Remark   *string     `json:"remark,omitempty"`
+	Role     *[]UserRole `json:"role,omitempty"`
 	Status   *UserStatus `json:"status,omitempty"`
-	Username *string     `json:"username,omitempty"`
+	Updated  *string     `json:"updated,omitempty"`
+	Username string      `json:"username"`
 }
 
 // UserStatus defines model for User.Status.
 type UserStatus string
 
+// UserRole defines model for UserRole.
+type UserRole struct {
+	Created  *string `json:"created,omitempty"`
+	Id       *int32  `json:"id,omitempty"`
+	RoleId   *int32  `json:"role_id,omitempty"`
+	RoleName *string `json:"role_name,omitempty"`
+	Updated  *string `json:"updated,omitempty"`
+	UserId   *int32  `json:"user_id,omitempty"`
+}
+
 // GetApiV1UsersParams defines parameters for GetApiV1Users.
 type GetApiV1UsersParams struct {
 	Username *string `form:"username,omitempty" json:"username,omitempty"`
 	Password *string `form:"password,omitempty" json:"password,omitempty"`
+	Name     *string `form:"name,omitempty" json:"name,omitempty"`
+	Status   *string `form:"status,omitempty" json:"status,omitempty"`
+	Current  int     `form:"current" json:"current"`
+	PageSize int     `form:"pageSize" json:"pageSize"`
 }
 
 // PostApiV1UsersJSONRequestBody defines body for PostApiV1Users for application/json ContentType.
 type PostApiV1UsersJSONRequestBody = User
+
+// PutApiV1UsersIdJSONRequestBody defines body for PutApiV1UsersId for application/json ContentType.
+type PutApiV1UsersIdJSONRequestBody = User
