@@ -40,7 +40,7 @@ func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (int
 const createUser = `-- name: CreateUser :one
 INSERT INTO app_user (username, password, name, email, phone, remark, status, created, updated)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING username, name, email, phone, remark, status, created, updated
+RETURNING id, username, password, name, email, phone, remark, status, created, updated
 `
 
 type CreateUserParams struct {
@@ -55,18 +55,7 @@ type CreateUserParams struct {
 	Updated  pgtype.Timestamp
 }
 
-type CreateUserRow struct {
-	Username string
-	Name     string
-	Email    string
-	Phone    string
-	Remark   string
-	Status   string
-	Created  pgtype.Timestamp
-	Updated  pgtype.Timestamp
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AppUser, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.Password,
@@ -78,9 +67,11 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		arg.Created,
 		arg.Updated,
 	)
-	var i CreateUserRow
+	var i AppUser
 	err := row.Scan(
+		&i.ID,
 		&i.Username,
+		&i.Password,
 		&i.Name,
 		&i.Email,
 		&i.Phone,
@@ -103,27 +94,18 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, name, email, phone, remark, status, created, updated
+SELECT id, username, password, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE id = $1 LIMIT 1
 `
 
-type GetUserRow struct {
-	Username string
-	Name     string
-	Email    string
-	Phone    string
-	Remark   string
-	Status   string
-	Created  pgtype.Timestamp
-	Updated  pgtype.Timestamp
-}
-
-func (q *Queries) GetUser(ctx context.Context, id int32) (GetUserRow, error) {
+func (q *Queries) GetUser(ctx context.Context, id int32) (AppUser, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
-	var i GetUserRow
+	var i AppUser
 	err := row.Scan(
+		&i.ID,
 		&i.Username,
+		&i.Password,
 		&i.Name,
 		&i.Email,
 		&i.Phone,
@@ -136,7 +118,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (GetUserRow, error) {
 }
 
 const listUser = `-- name: ListUser :many
-SELECT id, username, name, email, phone, remark, status, created, updated
+SELECT id, username, password, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE username LIKE $1 AND name LIKE $2 AND status = $3
 ORDER BY created DESC
@@ -148,30 +130,19 @@ type ListUserParams struct {
 	Status   string
 }
 
-type ListUserRow struct {
-	ID       int32
-	Username string
-	Name     string
-	Email    string
-	Phone    string
-	Remark   string
-	Status   string
-	Created  pgtype.Timestamp
-	Updated  pgtype.Timestamp
-}
-
-func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]ListUserRow, error) {
+func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, error) {
 	rows, err := q.db.Query(ctx, listUser, arg.Username, arg.Name, arg.Status)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListUserRow
+	var items []AppUser
 	for rows.Next() {
-		var i ListUserRow
+		var i AppUser
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
+			&i.Password,
 			&i.Name,
 			&i.Email,
 			&i.Phone,
@@ -190,7 +161,7 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]ListUserR
 	return items, nil
 }
 
-const updateUser = `-- name: UpdateUser :exec
+const updateUser = `-- name: UpdateUser :one
 UPDATE app_user
 SET username = $2, password = $3, name = $4, email = $5, phone = $6, remark = $7, status = $8, created = $9, updated = $10
 WHERE id = $1
@@ -210,8 +181,8 @@ type UpdateUserParams struct {
 	Updated  pgtype.Timestamp
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.Exec(ctx, updateUser,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (AppUser, error) {
+	row := q.db.QueryRow(ctx, updateUser,
 		arg.ID,
 		arg.Username,
 		arg.Password,
@@ -223,5 +194,18 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.Created,
 		arg.Updated,
 	)
-	return err
+	var i AppUser
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Password,
+		&i.Name,
+		&i.Email,
+		&i.Phone,
+		&i.Remark,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
 }
