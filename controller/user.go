@@ -107,8 +107,8 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {
 }
 
-func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}
+func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {}
 
-func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}
+func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {}
 
-func (u *UserImpl) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64) {}
+func (u *UserImpl) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {}

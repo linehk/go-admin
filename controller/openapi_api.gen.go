@@ -22,13 +22,13 @@ type ServerInterface interface {
 	PostApiV1Users(w http.ResponseWriter, r *http.Request)
 
 	// (DELETE /api/v1/users/{id})
-	DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64)
+	DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32)
 
 	// (GET /api/v1/users/{id})
-	GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64)
+	GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32)
 
 	// (PUT /api/v1/users/{id})
-	PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int64)
+	PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -144,7 +144,7 @@ func (siw *ServerInterfaceWrapper) DeleteApiV1UsersId(w http.ResponseWriter, r *
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id int64
+	var id int32
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -170,7 +170,7 @@ func (siw *ServerInterfaceWrapper) GetApiV1UsersId(w http.ResponseWriter, r *htt
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id int64
+	var id int32
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -196,7 +196,7 @@ func (siw *ServerInterfaceWrapper) PutApiV1UsersId(w http.ResponseWriter, r *htt
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id int64
+	var id int32
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
