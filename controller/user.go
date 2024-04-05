@@ -15,8 +15,8 @@ type UserImpl struct {
 
 func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var user PostApiV1UsersJSONRequestBody
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var req PostApiV1UsersJSONRequestBody
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "decode err: ", http.StatusBadRequest)
 		slog.Error("decode err: ", err)
@@ -24,29 +24,29 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var createUserParams model.CreateUserParams
-	createUserParams.Username = user.Username
-	password, err := hash(user.Password)
+	createUserParams.Username = req.Username
+	password, err := hash(req.Password)
 	if err != nil {
 		http.Error(w, "hash password err: ", http.StatusBadRequest)
 		slog.Error("hash password err: ", err)
 		return
 	}
 	createUserParams.Password = password
-	if user.Name != nil {
-		createUserParams.Name = *user.Name
+	if req.Name != nil {
+		createUserParams.Name = *req.Name
 	}
-	if user.Email != nil {
-		createUserParams.Email = *user.Email
+	if req.Email != nil {
+		createUserParams.Email = *req.Email
 	}
-	if user.Phone != nil {
-		createUserParams.Phone = *user.Phone
+	if req.Phone != nil {
+		createUserParams.Phone = *req.Phone
 	}
-	if user.Remark != nil {
-		createUserParams.Remark = *user.Remark
+	if req.Remark != nil {
+		createUserParams.Remark = *req.Remark
 	}
 	createUserParams.Status = string(Activated)
-	if user.Created != nil {
-		err = createUserParams.Created.Scan(*user.Created)
+	if req.Created != nil {
+		err = createUserParams.Created.Scan(*req.Created)
 		if err != nil {
 			http.Error(w, "scan time err: ", http.StatusBadRequest)
 			slog.Error("scan time err: ", err)
@@ -60,8 +60,8 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	if user.Updated != nil {
-		err = createUserParams.Updated.Scan(*user.Updated)
+	if req.Updated != nil {
+		err = createUserParams.Updated.Scan(*req.Updated)
 		if err != nil {
 			http.Error(w, "scan time err: ", http.StatusBadRequest)
 			slog.Error("scan time err: ", err)

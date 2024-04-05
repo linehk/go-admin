@@ -22,7 +22,6 @@ func TestPostApiV1Users(t *testing.T) {
 	reqBodyJSON := `{
 "username": "username1",
 "password": "password1",
-"name": "name1",
 "email": "email@gamil.com1",
 "phone": "18682635684",
 "remark": "remark1",
@@ -55,7 +54,7 @@ func TestPostApiV1Users(t *testing.T) {
 	userImpl.PostApiV1Users(w, req)
 	var actual controller.User
 	_ = json.NewDecoder(w.Body).Decode(&actual)
-	name := "name1"
+	name := ""
 	email := "email@gamil.com1"
 	phone := "18682635684"
 	remark := "remark1"
