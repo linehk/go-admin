@@ -29,3 +29,37 @@ func hash(password string) (string, error) {
 	h, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	return string(h), err
 }
+
+func GetUserRowToResp(userModel model.GetUserRow) User {
+	const format = "2006-01-02 15:04:05.999999999"
+	var userResp User
+	userResp.Username = userModel.Username
+	userResp.Name = &userModel.Name
+	userResp.Email = &userModel.Email
+	userResp.Phone = &userModel.Phone
+	userResp.Remark = &userModel.Remark
+	userStatus := UserStatus(userModel.Status)
+	userResp.Status = &userStatus
+	createdStr := userModel.Created.Time.Format(format)
+	userResp.Created = &createdStr
+	updatedStr := userModel.Updated.Time.Format(format)
+	userResp.Updated = &updatedStr
+	return userResp
+}
+
+func CreateUserRowToResp(userModel model.CreateUserRow) User {
+	const format = "2006-01-02 15:04:05.999999999"
+	var userResp User
+	userResp.Username = userModel.Username
+	userResp.Name = &userModel.Name
+	userResp.Email = &userModel.Email
+	userResp.Phone = &userModel.Phone
+	userResp.Remark = &userModel.Remark
+	userStatus := UserStatus(userModel.Status)
+	userResp.Status = &userStatus
+	createdStr := userModel.Created.Time.Format(format)
+	userResp.Created = &createdStr
+	updatedStr := userModel.Updated.Time.Format(format)
+	userResp.Updated = &updatedStr
+	return userResp
+}

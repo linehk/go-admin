@@ -40,7 +40,7 @@ func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (int
 const createUser = `-- name: CreateUser :one
 INSERT INTO app_user (username, password, name, email, phone, remark, status, created, updated)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING id, username, password, name, email, phone, remark, status, created, updated
+RETURNING username, name, email, phone, remark, status, created, updated
 `
 
 type CreateUserParams struct {
@@ -55,7 +55,18 @@ type CreateUserParams struct {
 	Updated  pgtype.Timestamp
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AppUser, error) {
+type CreateUserRow struct {
+	Username string
+	Name     string
+	Email    string
+	Phone    string
+	Remark   string
+	Status   string
+	Created  pgtype.Timestamp
+	Updated  pgtype.Timestamp
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.Password,
@@ -67,11 +78,9 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AppUser
 		arg.Created,
 		arg.Updated,
 	)
-	var i AppUser
+	var i CreateUserRow
 	err := row.Scan(
-		&i.ID,
 		&i.Username,
-		&i.Password,
 		&i.Name,
 		&i.Email,
 		&i.Phone,
@@ -94,14 +103,14 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, email, phone, remark, status, created, updated
+SELECT username, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE id = $1 LIMIT 1
 `
 
 type GetUserRow struct {
-	ID       int32
 	Username string
+	Name     string
 	Email    string
 	Phone    string
 	Remark   string
@@ -114,8 +123,8 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (GetUserRow, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
 	var i GetUserRow
 	err := row.Scan(
-		&i.ID,
 		&i.Username,
+		&i.Name,
 		&i.Email,
 		&i.Phone,
 		&i.Remark,
@@ -127,7 +136,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (GetUserRow, error) {
 }
 
 const listUser = `-- name: ListUser :many
-SELECT id, username, email, phone, remark, status, created, updated
+SELECT id, username, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE username LIKE $1 AND name LIKE $2 AND status = $3
 ORDER BY created DESC
@@ -142,6 +151,7 @@ type ListUserParams struct {
 type ListUserRow struct {
 	ID       int32
 	Username string
+	Name     string
 	Email    string
 	Phone    string
 	Remark   string
@@ -162,6 +172,7 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]ListUserR
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
+			&i.Name,
 			&i.Email,
 			&i.Phone,
 			&i.Remark,

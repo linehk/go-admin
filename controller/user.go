@@ -83,20 +83,7 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const format = "2006-01-02 15:04:05.999999999"
-	var userResp User
-	userResp.Username = userModel.Username
-	userResp.Name = &userModel.Name
-	userResp.Email = &userModel.Email
-	userResp.Phone = &userModel.Phone
-	userResp.Remark = &userModel.Remark
-	userStatus := UserStatus(userModel.Status)
-	userResp.Status = &userStatus
-	createdStr := userModel.Created.Time.Format(format)
-	userResp.Created = &createdStr
-	updatedStr := userModel.Updated.Time.Format(format)
-	userResp.Updated = &updatedStr
-	err = json.NewEncoder(w).Encode(userResp)
+	err = json.NewEncoder(w).Encode(CreateUserRowToResp(userModel))
 	if err != nil {
 		http.Error(w, "decode err: ", http.StatusBadRequest)
 		slog.Error("decode err: ", err)
@@ -107,8 +94,30 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {
 }
 
-func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {}
+func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {
+	w.Header().Set("Content-Type", "application/json")
+	err := u.DB.DeleteUser(r.Context(), id)
+	if err != nil {
+		http.Error(w, "db err: ", http.StatusBadRequest)
+		slog.Error("db err: ", err)
+		return
+	}
+}
 
-func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {}
+func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {
+	w.Header().Set("Content-Type", "application/json")
+	userModel, err := u.DB.GetUser(r.Context(), id)
+	if err != nil {
+		http.Error(w, "db err: ", http.StatusBadRequest)
+		slog.Error("db err: ", err)
+		return
+	}
+	err = json.NewEncoder(w).Encode(GetUserRowToResp(userModel))
+	if err != nil {
+		http.Error(w, "decode err: ", http.StatusBadRequest)
+		slog.Error("decode err: ", err)
+		return
+	}
+}
 
 func (u *UserImpl) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {}

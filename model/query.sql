@@ -1,10 +1,10 @@
 -- name: GetUser :one
-SELECT id, username, email, phone, remark, status, created, updated
+SELECT username, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE id = $1 LIMIT 1;
 
 -- name: ListUser :many
-SELECT id, username, email, phone, remark, status, created, updated
+SELECT id, username, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE username LIKE $1 AND name LIKE $2 AND status = $3
 ORDER BY created DESC;
@@ -22,7 +22,7 @@ WHERE username = $1 LIMIT 1;
 -- name: CreateUser :one
 INSERT INTO app_user (username, password, name, email, phone, remark, status, created, updated)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING *;
+RETURNING username, name, email, phone, remark, status, created, updated;
 
 -- name: UpdateUser :exec
 UPDATE app_user
