@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
@@ -18,21 +19,9 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func TestPostApiV1Users(t *testing.T) {
-	reqBodyJSON := `{
-"username": "username1",
-"password": "password1",
-"email": "email@gamil.com1",
-"phone": "18682635684",
-"remark": "remark1",
-"status": "activated",
-"created": "2024-04-04 13:56:35.671521",
-"updated": "2024-04-05 13:56:35.671521"
-}`
-	req := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON))
-	var reqBody controller.PostApiV1UsersJSONRequestBody
-	_ = json.NewDecoder(strings.NewReader(reqBodyJSON)).Decode(&reqBody)
-	w := httptest.NewRecorder()
+const baseURL = "http://localhost:8080/"
+
+func ContainerDB(t *testing.T) *model.Queries {
 	ctx := context.Background()
 	pg, err := postgres.RunContainer(ctx,
 		testcontainers.WithImage("postgres:16.2"),
@@ -50,216 +39,22 @@ func TestPostApiV1Users(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
-	userImpl.PostApiV1Users(w, req)
+	return model.Setup(ctx, dsn)
+}
+
+func createUser(db *model.Queries, createUserReqJSON string) controller.User {
+	createUserReq := httptest.NewRequest(http.MethodPost, baseURL+"api/v1/users", strings.NewReader(createUserReqJSON))
+	createUserRecorder := httptest.NewRecorder()
+	userImpl := &controller.UserImpl{DB: db}
+	userImpl.PostApiV1Users(createUserRecorder, createUserReq)
 	var actual controller.User
-	_ = json.NewDecoder(w.Body).Decode(&actual)
-	name := ""
-	email := "email@gamil.com1"
-	phone := "18682635684"
-	remark := "remark1"
-	status := controller.Activated
-	created := "2024-04-04 13:56:35.671521"
-	updated := "2024-04-05 13:56:35.671521"
-	expected := controller.User{
-		Username: "username1",
-		Name:     &name,
-		Email:    &email,
-		Phone:    &phone,
-		Remark:   &remark,
-		Status:   &status,
-		Created:  &created,
-		Updated:  &updated,
-	}
-	assert.Equal(t, expected, actual)
+	_ = json.NewDecoder(createUserRecorder.Body).Decode(&actual)
+	return actual
 }
 
-func TestGetApiV1UsersId(t *testing.T) {
-	reqBodyJSON := `{
+var user1JSON = `{
 "username": "username1",
 "password": "password1",
-"name": "name1",
-"email": "email@gamil.com1",
-"phone": "18682635684",
-"remark": "remark1",
-"status": "activated",
-"created": "2024-04-04 13:56:35.671521",
-"updated": "2024-04-05 13:56:35.671521"
-}`
-	postReq := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON))
-	var reqBody controller.PostApiV1UsersJSONRequestBody
-	_ = json.NewDecoder(strings.NewReader(reqBodyJSON)).Decode(&reqBody)
-	postRecorder := httptest.NewRecorder()
-	ctx := context.Background()
-	pg, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:16.2"),
-		postgres.WithInitScripts(filepath.Join("..", "model", "schema.sql")),
-		postgres.WithDatabase("go_admin"),
-		postgres.WithUsername("dev"),
-		postgres.WithPassword("dev"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).WithStartupTimeout(5*time.Second)))
-	if err != nil {
-		t.Error(err)
-	}
-	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Error(err)
-	}
-	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
-	userImpl.PostApiV1Users(postRecorder, postReq)
-
-	getReq := httptest.NewRequest(http.MethodGet, "http://localhost:8080/api/v1/users/1", nil)
-	var userId int32 = 1
-	getRecorder := httptest.NewRecorder()
-	userImpl.GetApiV1UsersId(getRecorder, getReq, userId)
-
-	var actual controller.User
-	_ = json.NewDecoder(getRecorder.Body).Decode(&actual)
-	name := "name1"
-	email := "email@gamil.com1"
-	phone := "18682635684"
-	remark := "remark1"
-	status := controller.Activated
-	created := "2024-04-04 13:56:35.671521"
-	updated := "2024-04-05 13:56:35.671521"
-	expected := controller.User{
-		Username: "username1",
-		Name:     &name,
-		Email:    &email,
-		Phone:    &phone,
-		Remark:   &remark,
-		Status:   &status,
-		Created:  &created,
-		Updated:  &updated,
-	}
-	assert.Equal(t, expected, actual)
-}
-
-func TestDeleteApiV1UsersId(t *testing.T) {
-	reqBodyJSON := `{
-"username": "username1",
-"password": "password1",
-"name": "name1",
-"email": "email@gamil.com1",
-"phone": "18682635684",
-"remark": "remark1",
-"status": "activated",
-"created": "2024-04-04 13:56:35.671521",
-"updated": "2024-04-05 13:56:35.671521"
-}`
-	postReq := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON))
-	var reqBody controller.PostApiV1UsersJSONRequestBody
-	_ = json.NewDecoder(strings.NewReader(reqBodyJSON)).Decode(&reqBody)
-	postRecorder := httptest.NewRecorder()
-	ctx := context.Background()
-	pg, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:16.2"),
-		postgres.WithInitScripts(filepath.Join("..", "model", "schema.sql")),
-		postgres.WithDatabase("go_admin"),
-		postgres.WithUsername("dev"),
-		postgres.WithPassword("dev"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).WithStartupTimeout(5*time.Second)))
-	if err != nil {
-		t.Error(err)
-	}
-	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Error(err)
-	}
-	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
-	userImpl.PostApiV1Users(postRecorder, postReq)
-
-	deleteReq := httptest.NewRequest(http.MethodDelete, "http://localhost:8080/api/v1/users/1", nil)
-	deleteRecorder := httptest.NewRecorder()
-	var userId int32 = 1
-	userImpl.DeleteApiV1UsersId(deleteRecorder, deleteReq, userId)
-
-	actual := deleteRecorder.Code
-	expected := http.StatusOK
-	assert.Equal(t, expected, actual)
-}
-
-func TestPutApiV1UsersId(t *testing.T) {
-	reqBodyJSON := `{
-"username": "username1",
-"password": "password1",
-"email": "email@gamil.com1",
-"phone": "18682635684",
-"remark": "remark1",
-"status": "activated",
-"created": "2024-04-04 13:56:35.671521",
-"updated": "2024-04-05 13:56:35.671521"
-}`
-	postReq := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON))
-	var reqBody controller.PostApiV1UsersJSONRequestBody
-	_ = json.NewDecoder(strings.NewReader(reqBodyJSON)).Decode(&reqBody)
-	postRecorder := httptest.NewRecorder()
-	ctx := context.Background()
-	pg, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:16.2"),
-		postgres.WithInitScripts(filepath.Join("..", "model", "schema.sql")),
-		postgres.WithDatabase("go_admin"),
-		postgres.WithUsername("dev"),
-		postgres.WithPassword("dev"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).WithStartupTimeout(5*time.Second)))
-	if err != nil {
-		t.Error(err)
-	}
-	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Error(err)
-	}
-	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
-	userImpl.PostApiV1Users(postRecorder, postReq)
-
-	putBodyJSON := `{
-"username": "username2",
-"password": "password2",
-"email": "email@gamil.com2",
-"phone": "2",
-"remark": "remark2",
-"status": "frozen",
-"created": "2024-03-04 13:56:35.671521",
-"updated": "2024-03-05 13:56:35.671521"
-}`
-	putReq := httptest.NewRequest(http.MethodPut, "http://localhost:8080/api/v1/users/1", strings.NewReader(putBodyJSON))
-	putRecorder := httptest.NewRecorder()
-	var userId int32 = 1
-	userImpl.PutApiV1UsersId(putRecorder, putReq, userId)
-
-	var actual controller.User
-	_ = json.NewDecoder(putRecorder.Body).Decode(&actual)
-	name := ""
-	email := "email@gamil.com2"
-	phone := "2"
-	remark := "remark2"
-	status := controller.Frozen
-	created := "2024-03-04 13:56:35.671521"
-	updated := "2024-03-05 13:56:35.671521"
-	expected := controller.User{
-		Username: "username2",
-		Name:     &name,
-		Email:    &email,
-		Phone:    &phone,
-		Remark:   &remark,
-		Status:   &status,
-		Created:  &created,
-		Updated:  &updated,
-	}
-	assert.Equal(t, expected, actual)
-}
-
-func TestGetApiV1Users(t *testing.T) {
-	reqBodyJSON1 := `{
-"username": "username1",
-"password": "password1",
-"name": "name1",
 "email": "email1",
 "phone": "phone1",
 "remark": "remark1",
@@ -267,12 +62,29 @@ func TestGetApiV1Users(t *testing.T) {
 "created": "2024-04-04 13:56:35.671521",
 "updated": "2024-04-05 13:56:35.671521"
 }`
-	postReq1 := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON1))
 
-	reqBodyJSON2 := `{
+var username1 = "username1"
+var name1 = ""
+var email1 = "email1"
+var phone1 = "phone1"
+var remark1 = "remark1"
+var status1 = controller.Activated
+var created1 = "2024-04-04 13:56:35.671521"
+var updated1 = "2024-04-05 13:56:35.671521"
+var user1 = controller.User{
+	Username: username1,
+	Name:     &name1,
+	Email:    &email1,
+	Phone:    &phone1,
+	Remark:   &remark1,
+	Status:   &status1,
+	Created:  &created1,
+	Updated:  &updated1,
+}
+
+var user2JSON = `{
 "username": "username2",
 "password": "password2",
-"name": "name2",
 "email": "email2",
 "phone": "phone2",
 "remark": "remark2",
@@ -280,83 +92,105 @@ func TestGetApiV1Users(t *testing.T) {
 "created": "2024-03-04 13:56:35.671521",
 "updated": "2024-03-05 13:56:35.671521"
 }`
-	postReq2 := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON2))
-	postRecorder := httptest.NewRecorder()
-	ctx := context.Background()
-	pg, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:16.2"),
-		postgres.WithInitScripts(filepath.Join("..", "model", "schema.sql")),
-		postgres.WithDatabase("go_admin"),
-		postgres.WithUsername("dev"),
-		postgres.WithPassword("dev"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).WithStartupTimeout(5*time.Second)))
-	if err != nil {
-		t.Error(err)
-	}
-	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Error(err)
-	}
-	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
-	userImpl.PostApiV1Users(postRecorder, postReq1)
-	userImpl.PostApiV1Users(postRecorder, postReq2)
 
-	getReq := httptest.NewRequest(http.MethodGet, "http://localhost:8080/api/v1/users", nil)
-	reqStatus := string(controller.Activated)
+var username2 = "username2"
+var name2 = ""
+var email2 = "email2"
+var phone2 = "phone2"
+var remark2 = "remark2"
+var status2 = controller.Activated
+var created2 = "2024-03-04 13:56:35.671521"
+var updated2 = "2024-03-05 13:56:35.671521"
+var user2 = controller.User{
+	Username: username2,
+	Name:     &name2,
+	Email:    &email2,
+	Phone:    &phone2,
+	Remark:   &remark2,
+	Status:   &status2,
+	Created:  &created2,
+	Updated:  &updated2,
+}
+
+func TestPostApiV1Users(t *testing.T) {
+	db := ContainerDB(t)
+	actual := createUser(db, user1JSON)
+
+	assert.Equal(t, user1, actual)
+}
+
+func TestGetApiV1UsersId(t *testing.T) {
+	db := ContainerDB(t)
+	_ = createUser(db, user1JSON)
+
+	var userId int32 = 1
+	getReq := httptest.NewRequest(http.MethodGet, baseURL+fmt.Sprintf("api/v1/users/%d", userId), nil)
+	getRecorder := httptest.NewRecorder()
+
+	userImpl := &controller.UserImpl{DB: db}
+	userImpl.GetApiV1UsersId(getRecorder, getReq, userId)
+	var actual controller.User
+	_ = json.NewDecoder(getRecorder.Body).Decode(&actual)
+
+	assert.Equal(t, user1, actual)
+}
+
+func TestDeleteApiV1UsersId(t *testing.T) {
+	db := ContainerDB(t)
+	_ = createUser(db, user1JSON)
+
+	var userId int32 = 1
+	deleteReq := httptest.NewRequest(http.MethodDelete, baseURL+fmt.Sprintf("api/v1/users/%d", userId), nil)
+	deleteRecorder := httptest.NewRecorder()
+
+	userImpl := &controller.UserImpl{DB: db}
+	userImpl.DeleteApiV1UsersId(deleteRecorder, deleteReq, userId)
+
+	actual := deleteRecorder.Code
+	expected := http.StatusOK
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestPutApiV1UsersId(t *testing.T) {
+	db := ContainerDB(t)
+	_ = createUser(db, user1JSON)
+
+	var userId int32 = 1
+	putReq := httptest.NewRequest(http.MethodPut, baseURL+fmt.Sprintf("api/v1/users/%d", userId), strings.NewReader(user2JSON))
+	putRecorder := httptest.NewRecorder()
+
+	userImpl := &controller.UserImpl{DB: db}
+	userImpl.PutApiV1UsersId(putRecorder, putReq, userId)
+
+	var actual controller.User
+	_ = json.NewDecoder(putRecorder.Body).Decode(&actual)
+
+	assert.Equal(t, user2, actual)
+}
+
+func TestGetApiV1Users(t *testing.T) {
+	db := ContainerDB(t)
+	_ = createUser(db, user1JSON)
+	_ = createUser(db, user2JSON)
+
+	userImpl := &controller.UserImpl{DB: db}
+	getReq := httptest.NewRequest(http.MethodGet, baseURL+"api/v1/users", nil)
+	status := string(controller.Activated)
 	params := controller.GetApiV1UsersParams{
 		Current:  0,
 		PageSize: 10,
-		Status:   &reqStatus,
+		Status:   &status,
 	}
 	getRecorder := httptest.NewRecorder()
 	userImpl.GetApiV1Users(getRecorder, getReq, params)
 
 	var actual []controller.User
 	_ = json.NewDecoder(getRecorder.Body).Decode(&actual)
-
-	username1 := "username1"
-	name1 := "name1"
-	email1 := "email1"
-	phone1 := "phone1"
-	remark1 := "remark1"
-	status1 := controller.Activated
-	created1 := "2024-04-04 13:56:35.671521"
-	updated1 := "2024-04-05 13:56:35.671521"
-	user1 := controller.User{
-		Username: username1,
-		Name:     &name1,
-		Email:    &email1,
-		Phone:    &phone1,
-		Remark:   &remark1,
-		Status:   &status1,
-		Created:  &created1,
-		Updated:  &updated1,
-	}
-
-	username2 := "username2"
-	name2 := "name2"
-	email2 := "email2"
-	phone2 := "phone2"
-	remark2 := "remark2"
-	status2 := controller.Activated
-	created2 := "2024-03-04 13:56:35.671521"
-	updated2 := "2024-03-05 13:56:35.671521"
-	user2 := controller.User{
-		Username: username2,
-		Name:     &name2,
-		Email:    &email2,
-		Phone:    &phone2,
-		Remark:   &remark2,
-		Status:   &status2,
-		Created:  &created2,
-		Updated:  &updated2,
-	}
-
 	expected := []controller.User{
 		user1,
 		user2,
 	}
+
 	assert.Equal(t, expected, actual)
 }
