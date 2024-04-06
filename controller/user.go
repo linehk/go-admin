@@ -45,6 +45,43 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {
+	w.Header().Set("Content-Type", "application/json")
+	var listUserParams model.ListUserParams
+	if params.Username != nil {
+		listUserParams.Column1 = *params.Username
+	}
+	if params.Name != nil {
+		listUserParams.Column2 = *params.Name
+	}
+	if params.Status != nil {
+		listUserParams.Column3 = *params.Status
+	}
+
+	if params.Current > 0 && params.PageSize > 0 {
+		listUserParams.Limit = int32(params.PageSize)
+		listUserParams.Offset = int32((params.Current - 1) * params.PageSize)
+	} else if params.PageSize > 0 {
+		listUserParams.Limit = int32(params.PageSize)
+	}
+
+	userModelList, err := u.DB.ListUser(r.Context(), listUserParams)
+	if err != nil {
+		http.Error(w, "db err: ", http.StatusBadRequest)
+		slog.Error("db err: ", err)
+		return
+	}
+
+	var userRespList []User
+	for _, userModel := range userModelList {
+		userRespList = append(userRespList, userModelToResp(userModel))
+	}
+
+	err = json.NewEncoder(w).Encode(userRespList)
+	if err != nil {
+		http.Error(w, "decode err: ", http.StatusBadRequest)
+		slog.Error("decode err: ", err)
+		return
+	}
 }
 
 func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {

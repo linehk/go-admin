@@ -254,3 +254,109 @@ func TestPutApiV1UsersId(t *testing.T) {
 	}
 	assert.Equal(t, expected, actual)
 }
+
+func TestGetApiV1Users(t *testing.T) {
+	reqBodyJSON1 := `{
+"username": "username1",
+"password": "password1",
+"name": "name1",
+"email": "email1",
+"phone": "phone1",
+"remark": "remark1",
+"status": "activated",
+"created": "2024-04-04 13:56:35.671521",
+"updated": "2024-04-05 13:56:35.671521"
+}`
+	postReq1 := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON1))
+
+	reqBodyJSON2 := `{
+"username": "username2",
+"password": "password2",
+"name": "name2",
+"email": "email2",
+"phone": "phone2",
+"remark": "remark2",
+"status": "activated",
+"created": "2024-03-04 13:56:35.671521",
+"updated": "2024-03-05 13:56:35.671521"
+}`
+	postReq2 := httptest.NewRequest(http.MethodPost, "http://localhost:8080/api/v1/users", strings.NewReader(reqBodyJSON2))
+	postRecorder := httptest.NewRecorder()
+	ctx := context.Background()
+	pg, err := postgres.RunContainer(ctx,
+		testcontainers.WithImage("postgres:16.2"),
+		postgres.WithInitScripts(filepath.Join("..", "model", "schema.sql")),
+		postgres.WithDatabase("go_admin"),
+		postgres.WithUsername("dev"),
+		postgres.WithPassword("dev"),
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).WithStartupTimeout(5*time.Second)))
+	if err != nil {
+		t.Error(err)
+	}
+	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
+	if err != nil {
+		t.Error(err)
+	}
+	userImpl := &controller.UserImpl{DB: model.Setup(ctx, dsn)}
+	userImpl.PostApiV1Users(postRecorder, postReq1)
+	userImpl.PostApiV1Users(postRecorder, postReq2)
+
+	getReq := httptest.NewRequest(http.MethodGet, "http://localhost:8080/api/v1/users", nil)
+	reqStatus := string(controller.Activated)
+	params := controller.GetApiV1UsersParams{
+		Current:  0,
+		PageSize: 10,
+		Status:   &reqStatus,
+	}
+	getRecorder := httptest.NewRecorder()
+	userImpl.GetApiV1Users(getRecorder, getReq, params)
+
+	var actual []controller.User
+	_ = json.NewDecoder(getRecorder.Body).Decode(&actual)
+
+	username1 := "username1"
+	name1 := "name1"
+	email1 := "email1"
+	phone1 := "phone1"
+	remark1 := "remark1"
+	status1 := controller.Activated
+	created1 := "2024-04-04 13:56:35.671521"
+	updated1 := "2024-04-05 13:56:35.671521"
+	user1 := controller.User{
+		Username: username1,
+		Name:     &name1,
+		Email:    &email1,
+		Phone:    &phone1,
+		Remark:   &remark1,
+		Status:   &status1,
+		Created:  &created1,
+		Updated:  &updated1,
+	}
+
+	username2 := "username2"
+	name2 := "name2"
+	email2 := "email2"
+	phone2 := "phone2"
+	remark2 := "remark2"
+	status2 := controller.Activated
+	created2 := "2024-03-04 13:56:35.671521"
+	updated2 := "2024-03-05 13:56:35.671521"
+	user2 := controller.User{
+		Username: username2,
+		Name:     &name2,
+		Email:    &email2,
+		Phone:    &phone2,
+		Remark:   &remark2,
+		Status:   &status2,
+		Created:  &created2,
+		Updated:  &updated2,
+	}
+
+	expected := []controller.User{
+		user1,
+		user2,
+	}
+	assert.Equal(t, expected, actual)
+}

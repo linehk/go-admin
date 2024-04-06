@@ -120,18 +120,30 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (AppUser, error) {
 const listUser = `-- name: ListUser :many
 SELECT id, username, password, name, email, phone, remark, status, created, updated
 FROM app_user
-WHERE username LIKE $1 AND name LIKE $2 AND status = $3
+WHERE ($1::VARCHAR = '' OR $1::VARCHAR ILIKE '%' || $1 || '%')
+AND ($2::VARCHAR = '' OR $2::VARCHAR ILIKE '%' || $2 || '%')
+AND ($3::VARCHAR = '' OR $3::VARCHAR = $3)
 ORDER BY created DESC
+LIMIT $4
+OFFSET $5
 `
 
 type ListUserParams struct {
-	Username string
-	Name     string
-	Status   string
+	Column1 string
+	Column2 string
+	Column3 string
+	Limit   int32
+	Offset  int32
 }
 
 func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, error) {
-	rows, err := q.db.Query(ctx, listUser, arg.Username, arg.Name, arg.Status)
+	rows, err := q.db.Query(ctx, listUser,
+		arg.Column1,
+		arg.Column2,
+		arg.Column3,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}

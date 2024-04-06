@@ -12,10 +12,6 @@ paths:
           required: false
           schema:
             type: string
-        - name: password
-          in: query
-          schema:
-            type: string
         - name: name
           in: query
           style: form

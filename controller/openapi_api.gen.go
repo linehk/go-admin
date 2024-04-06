@@ -57,14 +57,6 @@ func (siw *ServerInterfaceWrapper) GetApiV1Users(w http.ResponseWriter, r *http.
 		return
 	}
 
-	// ------------- Optional query parameter "password" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "password", r.URL.Query(), &params.Password)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "password", Err: err})
-		return
-	}
-
 	// ------------- Optional query parameter "name" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)

@@ -45,7 +45,6 @@ type UserRole struct {
 // GetApiV1UsersParams defines parameters for GetApiV1Users.
 type GetApiV1UsersParams struct {
 	Username *string `form:"username,omitempty" json:"username,omitempty"`
-	Password *string `form:"password,omitempty" json:"password,omitempty"`
 	Name     *string `form:"name,omitempty" json:"name,omitempty"`
 	Status   *string `form:"status,omitempty" json:"status,omitempty"`
 	Current  int     `form:"current" json:"current"`
