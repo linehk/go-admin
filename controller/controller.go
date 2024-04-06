@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -139,4 +141,21 @@ func reqToUpdateUserParams(req User) (model.UpdateUserParams, error) {
 		}
 	}
 	return updateUserParams, nil
+}
+
+func decode(w http.ResponseWriter, r *http.Request, req any) {
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "decode err: ", http.StatusBadRequest)
+		slog.Error("decode err: ", err)
+	}
+}
+
+func encode(w http.ResponseWriter, resp any) {
+	err := json.NewEncoder(w).Encode(&resp)
+	if err != nil {
+		http.Error(w, "encode err: ", http.StatusBadRequest)
+		slog.Error("encode err: ", err)
+	}
 }

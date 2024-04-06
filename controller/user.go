@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"log/slog"
 	"net/http"
 
@@ -13,14 +12,8 @@ type UserImpl struct {
 }
 
 func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var req PostApiV1UsersJSONRequestBody
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
-		return
-	}
+	var req User
+	decode(w, r, &req)
 
 	createUserParams, err := reqToCreateUserParams(req)
 	if err != nil {
@@ -36,12 +29,8 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(userModelToResp(userModel))
-	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
-		return
-	}
+	userResp := userModelToResp(userModel)
+	encode(w, userResp)
 }
 
 func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {
@@ -76,12 +65,7 @@ func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params 
 		userRespList = append(userRespList, userModelToResp(userModel))
 	}
 
-	err = json.NewEncoder(w).Encode(userRespList)
-	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
-		return
-	}
+	encode(w, userRespList)
 }
 
 func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {
@@ -102,29 +86,22 @@ func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id in
 		slog.Error("db err: ", err)
 		return
 	}
-	err = json.NewEncoder(w).Encode(userModelToResp(userModel))
-	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
-		return
-	}
+
+	userResp := userModelToResp(userModel)
+	encode(w, userResp)
 }
 
 func (u *UserImpl) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) {
-	w.Header().Set("Content-Type", "application/json")
-	var req PutApiV1UsersIdJSONRequestBody
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
-		return
-	}
+	var req User
+	decode(w, r, &req)
+
 	updateUserParams, err := reqToUpdateUserParams(req)
 	if err != nil {
 		http.Error(w, "reqToUpdateUserParams err: ", http.StatusBadRequest)
 		slog.Error("reqToUpdateUserParams err: ", err)
 		return
 	}
+
 	updateUserParams.ID = id
 	userModel, err := u.DB.UpdateUser(r.Context(), updateUserParams)
 	if err != nil {
@@ -133,10 +110,6 @@ func (u *UserImpl) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id in
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(userModelToResp(userModel))
-	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
-		return
-	}
+	userResp := userModelToResp(userModel)
+	encode(w, userResp)
 }
