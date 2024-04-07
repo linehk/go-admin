@@ -159,3 +159,10 @@ func encode(w http.ResponseWriter, resp any) {
 		slog.Error("encode err: ", err)
 	}
 }
+
+func paging(current, pageSize int) (int32, int32) {
+	if current > 0 && pageSize > 0 {
+		return int32((current - 1) * pageSize), int32(pageSize)
+	}
+	return int32(current), int32(pageSize)
+}

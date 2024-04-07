@@ -123,17 +123,17 @@ FROM app_user
 WHERE ($1::VARCHAR = '' OR $1::VARCHAR ILIKE '%' || $1 || '%')
 AND ($2::VARCHAR = '' OR $2::VARCHAR ILIKE '%' || $2 || '%')
 AND ($3::VARCHAR = '' OR $3::VARCHAR = $3)
+AND id > $4
 ORDER BY created DESC
-LIMIT $4
-OFFSET $5
+LIMIT $5
 `
 
 type ListUserParams struct {
 	Column1 string
 	Column2 string
 	Column3 string
+	ID      int32
 	Limit   int32
-	Offset  int32
 }
 
 func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, error) {
@@ -141,8 +141,8 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, 
 		arg.Column1,
 		arg.Column2,
 		arg.Column3,
+		arg.ID,
 		arg.Limit,
-		arg.Offset,
 	)
 	if err != nil {
 		return nil, err

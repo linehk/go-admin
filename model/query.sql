@@ -9,9 +9,9 @@ FROM app_user
 WHERE ($1::VARCHAR = '' OR $1::VARCHAR ILIKE '%' || $1 || '%')
 AND ($2::VARCHAR = '' OR $2::VARCHAR ILIKE '%' || $2 || '%')
 AND ($3::VARCHAR = '' OR $3::VARCHAR = $3)
+AND id > $4
 ORDER BY created DESC
-LIMIT $4
-OFFSET $5;
+LIMIT $5;
 
 -- name: CheckUserByID :one
 SELECT 1

@@ -46,12 +46,7 @@ func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params 
 		listUserParams.Column3 = *params.Status
 	}
 
-	if params.Current > 0 && params.PageSize > 0 {
-		listUserParams.Limit = int32(params.PageSize)
-		listUserParams.Offset = int32((params.Current - 1) * params.PageSize)
-	} else if params.PageSize > 0 {
-		listUserParams.Limit = int32(params.PageSize)
-	}
+	listUserParams.ID, listUserParams.Limit = paging(params.Current, params.PageSize)
 
 	userModelList, err := u.DB.ListUser(r.Context(), listUserParams)
 	if err != nil {
