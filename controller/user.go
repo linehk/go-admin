@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"log/slog"
 	"net/http"
 
+	"github.com/linehk/go-admin/errcode"
 	"github.com/linehk/go-admin/model"
 )
 
@@ -17,16 +17,12 @@ func (u *UserImpl) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 
 	createUserParams, err := reqToCreateUserParams(req)
 	if err != nil {
-		http.Error(w, "reqToCreateUserParams err: ", http.StatusBadRequest)
-		slog.Error("reqToCreateUserParams err: ", err)
-		return
+		ReturnErr(w, errcode.Convert)
 	}
 
 	userModel, err := u.DB.CreateUser(r.Context(), createUserParams)
 	if err != nil {
-		http.Error(w, "db err: ", http.StatusBadRequest)
-		slog.Error("db err: ", err)
-		return
+		ReturnErr(w, errcode.Database)
 	}
 
 	userResp := userModelToResp(userModel)
@@ -50,9 +46,7 @@ func (u *UserImpl) GetApiV1Users(w http.ResponseWriter, r *http.Request, params 
 
 	userModelList, err := u.DB.ListUser(r.Context(), listUserParams)
 	if err != nil {
-		http.Error(w, "db err: ", http.StatusBadRequest)
-		slog.Error("db err: ", err)
-		return
+		ReturnErr(w, errcode.Database)
 	}
 
 	var userRespList []User
@@ -67,9 +61,7 @@ func (u *UserImpl) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id
 	w.Header().Set("Content-Type", "application/json")
 	err := u.DB.DeleteUser(r.Context(), id)
 	if err != nil {
-		http.Error(w, "db err: ", http.StatusBadRequest)
-		slog.Error("db err: ", err)
-		return
+		ReturnErr(w, errcode.Database)
 	}
 }
 
@@ -77,9 +69,7 @@ func (u *UserImpl) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id in
 	w.Header().Set("Content-Type", "application/json")
 	userModel, err := u.DB.GetUser(r.Context(), id)
 	if err != nil {
-		http.Error(w, "db err: ", http.StatusBadRequest)
-		slog.Error("db err: ", err)
-		return
+		ReturnErr(w, errcode.Database)
 	}
 
 	userResp := userModelToResp(userModel)
@@ -92,17 +82,13 @@ func (u *UserImpl) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id in
 
 	updateUserParams, err := reqToUpdateUserParams(req)
 	if err != nil {
-		http.Error(w, "reqToUpdateUserParams err: ", http.StatusBadRequest)
-		slog.Error("reqToUpdateUserParams err: ", err)
-		return
+		ReturnErr(w, errcode.Convert)
 	}
 
 	updateUserParams.ID = id
 	userModel, err := u.DB.UpdateUser(r.Context(), updateUserParams)
 	if err != nil {
-		http.Error(w, "db err: ", http.StatusBadRequest)
-		slog.Error("db err: ", err)
-		return
+		ReturnErr(w, errcode.Database)
 	}
 
 	userResp := userModelToResp(userModel)

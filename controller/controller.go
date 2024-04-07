@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/linehk/go-admin/config"
+	"github.com/linehk/go-admin/errcode"
 	"github.com/linehk/go-admin/model"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -147,16 +148,14 @@ func decode(w http.ResponseWriter, r *http.Request, req any) {
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		http.Error(w, "decode err: ", http.StatusBadRequest)
-		slog.Error("decode err: ", err)
+		ReturnErr(w, errcode.Parse)
 	}
 }
 
 func encode(w http.ResponseWriter, resp any) {
 	err := json.NewEncoder(w).Encode(&resp)
 	if err != nil {
-		http.Error(w, "encode err: ", http.StatusBadRequest)
-		slog.Error("encode err: ", err)
+		ReturnErr(w, errcode.Parse)
 	}
 }
 
@@ -165,4 +164,18 @@ func paging(current, pageSize int) (int32, int32) {
 		return int32((current - 1) * pageSize), int32(pageSize)
 	}
 	return int32(current), int32(pageSize)
+}
+
+func ReturnErr(w http.ResponseWriter, e int32) {
+	w.Header().Set("Content-Type", "application/json")
+	errResp := Error{
+		Code:    e,
+		Message: errcode.Msg(e),
+	}
+	err := json.NewEncoder(w).Encode(errResp)
+	if err != nil {
+		panic(err)
+	}
+	slog.Error("err: ", err)
+	w.WriteHeader(http.StatusBadRequest)
 }
