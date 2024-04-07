@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkMenuByID = `-- name: CheckMenuByID :one
+SELECT 1
+FROM menu
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) CheckMenuByID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkMenuByID, id)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const checkRoleByCode = `-- name: CheckRoleByCode :one
 SELECT 1
 FROM role
@@ -63,6 +76,62 @@ func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (int
 	return column_1, err
 }
 
+const createMenu = `-- name: CreateMenu :one
+INSERT INTO menu (code, name, description, sequence, type, path, property,
+parent_id, parent_path, status, created, updated)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+RETURNING id, code, name, description, sequence, type, path, property, parent_id, parent_path, status, created, updated
+`
+
+type CreateMenuParams struct {
+	Code        string
+	Name        string
+	Description string
+	Sequence    int16
+	Type        string
+	Path        string
+	Property    string
+	ParentID    int32
+	ParentPath  string
+	Status      string
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
+}
+
+func (q *Queries) CreateMenu(ctx context.Context, arg CreateMenuParams) (Menu, error) {
+	row := q.db.QueryRow(ctx, createMenu,
+		arg.Code,
+		arg.Name,
+		arg.Description,
+		arg.Sequence,
+		arg.Type,
+		arg.Path,
+		arg.Property,
+		arg.ParentID,
+		arg.ParentPath,
+		arg.Status,
+		arg.Created,
+		arg.Updated,
+	)
+	var i Menu
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Description,
+		&i.Sequence,
+		&i.Type,
+		&i.Path,
+		&i.Property,
+		&i.ParentID,
+		&i.ParentPath,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const createRole = `-- name: CreateRole :one
 INSERT INTO role (code, name, description, sequence, status, created, updated)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -104,7 +173,8 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO app_user (username, password, name, email, phone, remark, status, created, updated)
+INSERT INTO app_user (username, password, name, email, phone, remark, status,
+created, updated)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 RETURNING id, username, password, name, email, phone, remark, status, created, updated
 `
@@ -149,6 +219,16 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AppUser
 	return i, err
 }
 
+const deleteMenu = `-- name: DeleteMenu :exec
+DELETE FROM menu
+WHERE id = $1
+`
+
+func (q *Queries) DeleteMenu(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteMenu, id)
+	return err
+}
+
 const deleteRole = `-- name: DeleteRole :exec
 DELETE FROM role
 WHERE id = $1
@@ -167,6 +247,34 @@ WHERE id = $1
 func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
+}
+
+const getMenu = `-- name: GetMenu :one
+SELECT id, code, name, description, sequence, type, path, property, parent_id, parent_path, status, created, updated
+FROM menu
+WHERE id = $1 LIMIT 1
+`
+
+// Menu
+func (q *Queries) GetMenu(ctx context.Context, id int32) (Menu, error) {
+	row := q.db.QueryRow(ctx, getMenu, id)
+	var i Menu
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Description,
+		&i.Sequence,
+		&i.Type,
+		&i.Path,
+		&i.Property,
+		&i.ParentID,
+		&i.ParentPath,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
 }
 
 const getRole = `-- name: GetRole :one
@@ -324,9 +432,70 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, 
 	return items, nil
 }
 
+const updateMenu = `-- name: UpdateMenu :one
+UPDATE menu
+SET code = $2, name = $3, description = $4, sequence = $5, type = $6,
+path = $7, property = $8, parent_id = $9, parent_path = $10, status = $11,
+created = $12, updated = $13
+WHERE id = $1
+RETURNING id, code, name, description, sequence, type, path, property, parent_id, parent_path, status, created, updated
+`
+
+type UpdateMenuParams struct {
+	ID          int32
+	Code        string
+	Name        string
+	Description string
+	Sequence    int16
+	Type        string
+	Path        string
+	Property    string
+	ParentID    int32
+	ParentPath  string
+	Status      string
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
+}
+
+func (q *Queries) UpdateMenu(ctx context.Context, arg UpdateMenuParams) (Menu, error) {
+	row := q.db.QueryRow(ctx, updateMenu,
+		arg.ID,
+		arg.Code,
+		arg.Name,
+		arg.Description,
+		arg.Sequence,
+		arg.Type,
+		arg.Path,
+		arg.Property,
+		arg.ParentID,
+		arg.ParentPath,
+		arg.Status,
+		arg.Created,
+		arg.Updated,
+	)
+	var i Menu
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Description,
+		&i.Sequence,
+		&i.Type,
+		&i.Path,
+		&i.Property,
+		&i.ParentID,
+		&i.ParentPath,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const updateRole = `-- name: UpdateRole :one
 UPDATE role
-SET code = $2, name = $3, description = $4, sequence = $5, status = $6, created = $7, updated = $8
+SET code = $2, name = $3, description = $4, sequence = $5, status = $6,
+created = $7, updated = $8
 WHERE id = $1
 RETURNING id, code, name, description, sequence, status, created, updated
 `
@@ -369,7 +538,8 @@ func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, e
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE app_user
-SET username = $2, password = $3, name = $4, email = $5, phone = $6, remark = $7, status = $8, created = $9, updated = $10
+SET username = $2, password = $3, name = $4, email = $5, phone = $6,
+remark = $7, status = $8, created = $9, updated = $10
 WHERE id = $1
 RETURNING id, username, password, name, email, phone, remark, status, created, updated
 `
