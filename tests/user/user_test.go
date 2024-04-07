@@ -1,52 +1,24 @@
-package tests
+package user
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/linehk/go-admin/controller"
 	"github.com/linehk/go-admin/model"
+	"github.com/linehk/go-admin/tests"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-const baseURL = "http://localhost:8080/"
-
-func ContainerDB(t *testing.T) *model.Queries {
-	ctx := context.Background()
-	pg, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:16.2"),
-		postgres.WithInitScripts(filepath.Join("..", "model", "schema.sql")),
-		postgres.WithDatabase("go_admin"),
-		postgres.WithUsername("dev"),
-		postgres.WithPassword("dev"),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).WithStartupTimeout(5*time.Second)))
-	if err != nil {
-		t.Error(err)
-	}
-	dsn, err := pg.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Error(err)
-	}
-	return model.Setup(ctx, dsn)
-}
-
 func createUser(db *model.Queries, createUserReqJSON string) controller.User {
-	createUserReq := httptest.NewRequest(http.MethodPost, baseURL+"api/v1/users", strings.NewReader(createUserReqJSON))
+	createUserReq := httptest.NewRequest(http.MethodPost, tests.BaseURL+"api/v1/users", strings.NewReader(createUserReqJSON))
 	createUserRecorder := httptest.NewRecorder()
-	userImpl := &controller.UserImpl{DB: db}
-	userImpl.PostApiV1Users(createUserRecorder, createUserReq)
+	api := &controller.API{DB: db}
+	api.PostApiV1Users(createUserRecorder, createUserReq)
 	var actual controller.User
 	_ = json.NewDecoder(createUserRecorder.Body).Decode(&actual)
 	return actual
@@ -113,22 +85,22 @@ var user2 = controller.User{
 }
 
 func TestPostApiV1Users(t *testing.T) {
-	db := ContainerDB(t)
+	db := tests.ContainerDB(t)
 	actual := createUser(db, user1JSON)
 
 	assert.Equal(t, user1, actual)
 }
 
 func TestGetApiV1UsersId(t *testing.T) {
-	db := ContainerDB(t)
+	db := tests.ContainerDB(t)
 	_ = createUser(db, user1JSON)
 
 	var userId int32 = 1
-	getReq := httptest.NewRequest(http.MethodGet, baseURL+fmt.Sprintf("api/v1/users/%d", userId), nil)
+	getReq := httptest.NewRequest(http.MethodGet, tests.BaseURL+fmt.Sprintf("api/v1/users/%d", userId), nil)
 	getRecorder := httptest.NewRecorder()
 
-	userImpl := &controller.UserImpl{DB: db}
-	userImpl.GetApiV1UsersId(getRecorder, getReq, userId)
+	api := &controller.API{DB: db}
+	api.GetApiV1UsersId(getRecorder, getReq, userId)
 	var actual controller.User
 	_ = json.NewDecoder(getRecorder.Body).Decode(&actual)
 
@@ -136,15 +108,15 @@ func TestGetApiV1UsersId(t *testing.T) {
 }
 
 func TestDeleteApiV1UsersId(t *testing.T) {
-	db := ContainerDB(t)
+	db := tests.ContainerDB(t)
 	_ = createUser(db, user1JSON)
 
 	var userId int32 = 1
-	deleteReq := httptest.NewRequest(http.MethodDelete, baseURL+fmt.Sprintf("api/v1/users/%d", userId), nil)
+	deleteReq := httptest.NewRequest(http.MethodDelete, tests.BaseURL+fmt.Sprintf("api/v1/users/%d", userId), nil)
 	deleteRecorder := httptest.NewRecorder()
 
-	userImpl := &controller.UserImpl{DB: db}
-	userImpl.DeleteApiV1UsersId(deleteRecorder, deleteReq, userId)
+	api := &controller.API{DB: db}
+	api.DeleteApiV1UsersId(deleteRecorder, deleteReq, userId)
 
 	actual := deleteRecorder.Code
 	expected := http.StatusOK
@@ -153,15 +125,15 @@ func TestDeleteApiV1UsersId(t *testing.T) {
 }
 
 func TestPutApiV1UsersId(t *testing.T) {
-	db := ContainerDB(t)
+	db := tests.ContainerDB(t)
 	_ = createUser(db, user1JSON)
 
 	var userId int32 = 1
-	putReq := httptest.NewRequest(http.MethodPut, baseURL+fmt.Sprintf("api/v1/users/%d", userId), strings.NewReader(user2JSON))
+	putReq := httptest.NewRequest(http.MethodPut, tests.BaseURL+fmt.Sprintf("api/v1/users/%d", userId), strings.NewReader(user2JSON))
 	putRecorder := httptest.NewRecorder()
 
-	userImpl := &controller.UserImpl{DB: db}
-	userImpl.PutApiV1UsersId(putRecorder, putReq, userId)
+	api := &controller.API{DB: db}
+	api.PutApiV1UsersId(putRecorder, putReq, userId)
 
 	var actual controller.User
 	_ = json.NewDecoder(putRecorder.Body).Decode(&actual)
@@ -170,12 +142,12 @@ func TestPutApiV1UsersId(t *testing.T) {
 }
 
 func TestGetApiV1Users(t *testing.T) {
-	db := ContainerDB(t)
+	db := tests.ContainerDB(t)
 	_ = createUser(db, user1JSON)
 	_ = createUser(db, user2JSON)
 
-	userImpl := &controller.UserImpl{DB: db}
-	getReq := httptest.NewRequest(http.MethodGet, baseURL+"api/v1/users", nil)
+	api := &controller.API{DB: db}
+	getReq := httptest.NewRequest(http.MethodGet, tests.BaseURL+"api/v1/users", nil)
 	status := string(controller.Activated)
 	params := controller.GetApiV1UsersParams{
 		Current:  0,
@@ -183,7 +155,7 @@ func TestGetApiV1Users(t *testing.T) {
 		Status:   &status,
 	}
 	getRecorder := httptest.NewRecorder()
-	userImpl.GetApiV1Users(getRecorder, getReq, params)
+	api.GetApiV1Users(getRecorder, getReq, params)
 
 	var actual []controller.User
 	_ = json.NewDecoder(getRecorder.Body).Decode(&actual)

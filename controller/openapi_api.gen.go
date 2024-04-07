@@ -15,6 +15,21 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (GET /api/v1/roles)
+	GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetApiV1RolesParams)
+
+	// (POST /api/v1/roles)
+	PostApiV1Roles(w http.ResponseWriter, r *http.Request)
+
+	// (DELETE /api/v1/roles/{id})
+	DeleteApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32)
+
+	// (GET /api/v1/roles/{id})
+	GetApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32)
+
+	// (PUT /api/v1/roles/{id})
+	PutApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32)
+
 	// (GET /api/v1/users)
 	GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams)
 
@@ -39,6 +54,165 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetApiV1Roles operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1Roles(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetApiV1RolesParams
+
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "current" -------------
+
+	if paramValue := r.URL.Query().Get("current"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "current"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "current", r.URL.Query(), &params.Current)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "current", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "pageSize" -------------
+
+	if paramValue := r.URL.Query().Get("pageSize"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "pageSize"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "pageSize", r.URL.Query(), &params.PageSize)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "pageSize", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiV1Roles(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostApiV1Roles operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostApiV1Roles(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteApiV1RolesId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1RolesId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApiV1RolesId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetApiV1RolesId operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1RolesId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiV1RolesId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PutApiV1RolesId operation middleware
+func (siw *ServerInterfaceWrapper) PutApiV1RolesId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutApiV1RolesId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // GetApiV1Users operation middleware
 func (siw *ServerInterfaceWrapper) GetApiV1Users(w http.ResponseWriter, r *http.Request) {
@@ -321,6 +495,11 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	m.HandleFunc("GET "+options.BaseURL+"/api/v1/roles", wrapper.GetApiV1Roles)
+	m.HandleFunc("POST "+options.BaseURL+"/api/v1/roles", wrapper.PostApiV1Roles)
+	m.HandleFunc("DELETE "+options.BaseURL+"/api/v1/roles/{id}", wrapper.DeleteApiV1RolesId)
+	m.HandleFunc("GET "+options.BaseURL+"/api/v1/roles/{id}", wrapper.GetApiV1RolesId)
+	m.HandleFunc("PUT "+options.BaseURL+"/api/v1/roles/{id}", wrapper.PutApiV1RolesId)
 	m.HandleFunc("GET "+options.BaseURL+"/api/v1/users", wrapper.GetApiV1Users)
 	m.HandleFunc("POST "+options.BaseURL+"/api/v1/users", wrapper.PostApiV1Users)
 	m.HandleFunc("DELETE "+options.BaseURL+"/api/v1/users/{id}", wrapper.DeleteApiV1UsersId)

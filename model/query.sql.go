@@ -11,6 +11,32 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkRoleByCode = `-- name: CheckRoleByCode :one
+SELECT 1
+FROM role
+WHERE code = $1 LIMIT 1
+`
+
+func (q *Queries) CheckRoleByCode(ctx context.Context, code string) (int32, error) {
+	row := q.db.QueryRow(ctx, checkRoleByCode, code)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const checkRoleByID = `-- name: CheckRoleByID :one
+SELECT 1
+FROM role
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) CheckRoleByID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkRoleByID, id)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const checkUserByID = `-- name: CheckUserByID :one
 SELECT 1
 FROM app_user
@@ -35,6 +61,46 @@ func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (int
 	var column_1 int32
 	err := row.Scan(&column_1)
 	return column_1, err
+}
+
+const createRole = `-- name: CreateRole :one
+INSERT INTO role (code, name, description, sequence, status, created, updated)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, code, name, description, sequence, status, created, updated
+`
+
+type CreateRoleParams struct {
+	Code        string
+	Name        string
+	Description string
+	Sequence    int16
+	Status      string
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
+}
+
+func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, error) {
+	row := q.db.QueryRow(ctx, createRole,
+		arg.Code,
+		arg.Name,
+		arg.Description,
+		arg.Sequence,
+		arg.Status,
+		arg.Created,
+		arg.Updated,
+	)
+	var i Role
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Description,
+		&i.Sequence,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
 }
 
 const createUser = `-- name: CreateUser :one
@@ -83,6 +149,16 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AppUser
 	return i, err
 }
 
+const deleteRole = `-- name: DeleteRole :exec
+DELETE FROM role
+WHERE id = $1
+`
+
+func (q *Queries) DeleteRole(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteRole, id)
+	return err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM app_user
 WHERE id = $1
@@ -93,12 +169,36 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	return err
 }
 
+const getRole = `-- name: GetRole :one
+SELECT id, code, name, description, sequence, status, created, updated
+FROM role
+WHERE id = $1 LIMIT 1
+`
+
+// Role
+func (q *Queries) GetRole(ctx context.Context, id int32) (Role, error) {
+	row := q.db.QueryRow(ctx, getRole, id)
+	var i Role
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Description,
+		&i.Sequence,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
 SELECT id, username, password, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE id = $1 LIMIT 1
 `
 
+// User
 func (q *Queries) GetUser(ctx context.Context, id int32) (AppUser, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
 	var i AppUser
@@ -115,6 +215,57 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (AppUser, error) {
 		&i.Updated,
 	)
 	return i, err
+}
+
+const listRole = `-- name: ListRole :many
+SELECT id, code, name, description, sequence, status, created, updated
+FROM role
+WHERE ($1::VARCHAR = '' OR $1::VARCHAR ILIKE '%' || $1 || '%')
+AND ($2::VARCHAR = '' OR $2::VARCHAR = $2)
+AND id > $3
+ORDER BY sequence, created DESC
+LIMIT $4
+`
+
+type ListRoleParams struct {
+	Column1 string
+	Column2 string
+	ID      int32
+	Limit   int32
+}
+
+func (q *Queries) ListRole(ctx context.Context, arg ListRoleParams) ([]Role, error) {
+	rows, err := q.db.Query(ctx, listRole,
+		arg.Column1,
+		arg.Column2,
+		arg.ID,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Role
+	for rows.Next() {
+		var i Role
+		if err := rows.Scan(
+			&i.ID,
+			&i.Code,
+			&i.Name,
+			&i.Description,
+			&i.Sequence,
+			&i.Status,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listUser = `-- name: ListUser :many
@@ -171,6 +322,49 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateRole = `-- name: UpdateRole :one
+UPDATE role
+SET code = $2, name = $3, description = $4, sequence = $5, status = $6, created = $7, updated = $8
+WHERE id = $1
+RETURNING id, code, name, description, sequence, status, created, updated
+`
+
+type UpdateRoleParams struct {
+	ID          int32
+	Code        string
+	Name        string
+	Description string
+	Sequence    int16
+	Status      string
+	Created     pgtype.Timestamp
+	Updated     pgtype.Timestamp
+}
+
+func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, error) {
+	row := q.db.QueryRow(ctx, updateRole,
+		arg.ID,
+		arg.Code,
+		arg.Name,
+		arg.Description,
+		arg.Sequence,
+		arg.Status,
+		arg.Created,
+		arg.Updated,
+	)
+	var i Role
+	err := row.Scan(
+		&i.ID,
+		&i.Code,
+		&i.Name,
+		&i.Description,
+		&i.Sequence,
+		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
 }
 
 const updateUser = `-- name: UpdateUser :one
