@@ -1,4 +1,4 @@
--- User
+--------------------------------- User --------------------------------
 -- name: GetUser :one
 SELECT *
 FROM app_user
@@ -41,7 +41,35 @@ RETURNING *;
 DELETE FROM app_user
 WHERE id = $1;
 
--- Role
+
+--------------------------------- UserRole --------------------------------
+-- name: GetUserRole :one
+SELECT *
+FROM user_role
+WHERE id = $1 LIMIT 1;
+
+-- name: CheckUserRoleByID :one
+SELECT 1
+FROM user_role
+WHERE id = $1 LIMIT 1;
+
+-- name: CreateUserRole :one
+INSERT INTO user_role (user_id, role_id, created, updated)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
+
+-- name: UpdateUserRole :one
+UPDATE user_role
+SET user_id = $2, role_id = $3, created = $4, updated = $5
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteUserRole :exec
+DELETE FROM user_role
+WHERE id = $1;
+
+
+--------------------------------- Role --------------------------------
 -- name: GetRole :one
 SELECT *
 FROM role
@@ -82,7 +110,35 @@ RETURNING *;
 DELETE FROM role
 WHERE id = $1;
 
--- Menu
+
+--------------------------------- RoleMenu --------------------------------
+-- name: GetRoleMenu :one
+SELECT *
+FROM role_menu
+WHERE id = $1 LIMIT 1;
+
+-- name: CheckRoleMenuByID :one
+SELECT 1
+FROM role_menu
+WHERE id = $1 LIMIT 1;
+
+-- name: CreateRoleMenu :one
+INSERT INTO role_menu (role_id, menu_id, created, updated)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
+
+-- name: UpdateRoleMenu :one
+UPDATE role_menu
+SET role_id = $2, menu_id = $3, created = $4, updated = $5
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteRoleMenu :exec
+DELETE FROM role_menu
+WHERE id = $1;
+
+
+--------------------------------- Menu --------------------------------
 -- name: GetMenu :one
 SELECT *
 FROM menu
@@ -111,7 +167,8 @@ RETURNING *;
 DELETE FROM menu
 WHERE id = $1;
 
--- Resource
+
+--------------------------------- Resource --------------------------------
 -- name: GetResource :one
 SELECT *
 FROM resource

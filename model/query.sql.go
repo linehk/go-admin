@@ -63,6 +63,19 @@ func (q *Queries) CheckRoleByID(ctx context.Context, id int32) (int32, error) {
 	return column_1, err
 }
 
+const checkRoleMenuByID = `-- name: CheckRoleMenuByID :one
+SELECT 1
+FROM role_menu
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) CheckRoleMenuByID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkRoleMenuByID, id)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const checkUserByID = `-- name: CheckUserByID :one
 SELECT 1
 FROM app_user
@@ -84,6 +97,19 @@ WHERE username = $1 LIMIT 1
 
 func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (int32, error) {
 	row := q.db.QueryRow(ctx, checkUserByUsername, username)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const checkUserRoleByID = `-- name: CheckUserRoleByID :one
+SELECT 1
+FROM user_role
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) CheckUserRoleByID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkUserRoleByID, id)
 	var column_1 int32
 	err := row.Scan(&column_1)
 	return column_1, err
@@ -219,6 +245,37 @@ func (q *Queries) CreateRole(ctx context.Context, arg CreateRoleParams) (Role, e
 	return i, err
 }
 
+const createRoleMenu = `-- name: CreateRoleMenu :one
+INSERT INTO role_menu (role_id, menu_id, created, updated)
+VALUES ($1, $2, $3, $4)
+RETURNING id, role_id, menu_id, created, updated
+`
+
+type CreateRoleMenuParams struct {
+	RoleID  int32
+	MenuID  int32
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+func (q *Queries) CreateRoleMenu(ctx context.Context, arg CreateRoleMenuParams) (RoleMenu, error) {
+	row := q.db.QueryRow(ctx, createRoleMenu,
+		arg.RoleID,
+		arg.MenuID,
+		arg.Created,
+		arg.Updated,
+	)
+	var i RoleMenu
+	err := row.Scan(
+		&i.ID,
+		&i.RoleID,
+		&i.MenuID,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO app_user (username, password, name, email, phone, remark, status,
 created, updated)
@@ -266,6 +323,37 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (AppUser
 	return i, err
 }
 
+const createUserRole = `-- name: CreateUserRole :one
+INSERT INTO user_role (user_id, role_id, created, updated)
+VALUES ($1, $2, $3, $4)
+RETURNING id, user_id, role_id, created, updated
+`
+
+type CreateUserRoleParams struct {
+	UserID  int32
+	RoleID  int32
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+func (q *Queries) CreateUserRole(ctx context.Context, arg CreateUserRoleParams) (UserRole, error) {
+	row := q.db.QueryRow(ctx, createUserRole,
+		arg.UserID,
+		arg.RoleID,
+		arg.Created,
+		arg.Updated,
+	)
+	var i UserRole
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RoleID,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const deleteMenu = `-- name: DeleteMenu :exec
 DELETE FROM menu
 WHERE id = $1
@@ -296,6 +384,16 @@ func (q *Queries) DeleteRole(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteRoleMenu = `-- name: DeleteRoleMenu :exec
+DELETE FROM role_menu
+WHERE id = $1
+`
+
+func (q *Queries) DeleteRoleMenu(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteRoleMenu, id)
+	return err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM app_user
 WHERE id = $1
@@ -306,13 +404,23 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteUserRole = `-- name: DeleteUserRole :exec
+DELETE FROM user_role
+WHERE id = $1
+`
+
+func (q *Queries) DeleteUserRole(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteUserRole, id)
+	return err
+}
+
 const getMenu = `-- name: GetMenu :one
 SELECT id, code, name, description, sequence, type, path, property, parent_id, parent_path, status, created, updated
 FROM menu
 WHERE id = $1 LIMIT 1
 `
 
-// Menu
+// ------------------------------- Menu --------------------------------
 func (q *Queries) GetMenu(ctx context.Context, id int32) (Menu, error) {
 	row := q.db.QueryRow(ctx, getMenu, id)
 	var i Menu
@@ -340,7 +448,7 @@ FROM resource
 WHERE id = $1 LIMIT 1
 `
 
-// Resource
+// ------------------------------- Resource --------------------------------
 func (q *Queries) GetResource(ctx context.Context, id int32) (Resource, error) {
 	row := q.db.QueryRow(ctx, getResource, id)
 	var i Resource
@@ -361,7 +469,7 @@ FROM role
 WHERE id = $1 LIMIT 1
 `
 
-// Role
+// ------------------------------- Role --------------------------------
 func (q *Queries) GetRole(ctx context.Context, id int32) (Role, error) {
 	row := q.db.QueryRow(ctx, getRole, id)
 	var i Role
@@ -378,13 +486,33 @@ func (q *Queries) GetRole(ctx context.Context, id int32) (Role, error) {
 	return i, err
 }
 
+const getRoleMenu = `-- name: GetRoleMenu :one
+SELECT id, role_id, menu_id, created, updated
+FROM role_menu
+WHERE id = $1 LIMIT 1
+`
+
+// ------------------------------- RoleMenu --------------------------------
+func (q *Queries) GetRoleMenu(ctx context.Context, id int32) (RoleMenu, error) {
+	row := q.db.QueryRow(ctx, getRoleMenu, id)
+	var i RoleMenu
+	err := row.Scan(
+		&i.ID,
+		&i.RoleID,
+		&i.MenuID,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const getUser = `-- name: GetUser :one
 SELECT id, username, password, name, email, phone, remark, status, created, updated
 FROM app_user
 WHERE id = $1 LIMIT 1
 `
 
-// User
+// ------------------------------- User --------------------------------
 func (q *Queries) GetUser(ctx context.Context, id int32) (AppUser, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
 	var i AppUser
@@ -397,6 +525,26 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (AppUser, error) {
 		&i.Phone,
 		&i.Remark,
 		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
+const getUserRole = `-- name: GetUserRole :one
+SELECT id, user_id, role_id, created, updated
+FROM user_role
+WHERE id = $1 LIMIT 1
+`
+
+// ------------------------------- UserRole --------------------------------
+func (q *Queries) GetUserRole(ctx context.Context, id int32) (UserRole, error) {
+	row := q.db.QueryRow(ctx, getUserRole, id)
+	var i UserRole
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RoleID,
 		&i.Created,
 		&i.Updated,
 	)
@@ -651,6 +799,40 @@ func (q *Queries) UpdateRole(ctx context.Context, arg UpdateRoleParams) (Role, e
 	return i, err
 }
 
+const updateRoleMenu = `-- name: UpdateRoleMenu :one
+UPDATE role_menu
+SET role_id = $2, menu_id = $3, created = $4, updated = $5
+WHERE id = $1
+RETURNING id, role_id, menu_id, created, updated
+`
+
+type UpdateRoleMenuParams struct {
+	ID      int32
+	RoleID  int32
+	MenuID  int32
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+func (q *Queries) UpdateRoleMenu(ctx context.Context, arg UpdateRoleMenuParams) (RoleMenu, error) {
+	row := q.db.QueryRow(ctx, updateRoleMenu,
+		arg.ID,
+		arg.RoleID,
+		arg.MenuID,
+		arg.Created,
+		arg.Updated,
+	)
+	var i RoleMenu
+	err := row.Scan(
+		&i.ID,
+		&i.RoleID,
+		&i.MenuID,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE app_user
 SET username = $2, password = $3, name = $4, email = $5, phone = $6,
@@ -695,6 +877,40 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (AppUser
 		&i.Phone,
 		&i.Remark,
 		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
+const updateUserRole = `-- name: UpdateUserRole :one
+UPDATE user_role
+SET user_id = $2, role_id = $3, created = $4, updated = $5
+WHERE id = $1
+RETURNING id, user_id, role_id, created, updated
+`
+
+type UpdateUserRoleParams struct {
+	ID      int32
+	UserID  int32
+	RoleID  int32
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+func (q *Queries) UpdateUserRole(ctx context.Context, arg UpdateUserRoleParams) (UserRole, error) {
+	row := q.db.QueryRow(ctx, updateUserRole,
+		arg.ID,
+		arg.UserID,
+		arg.RoleID,
+		arg.Created,
+		arg.Updated,
+	)
+	var i UserRole
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RoleID,
 		&i.Created,
 		&i.Updated,
 	)
