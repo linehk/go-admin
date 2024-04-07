@@ -24,6 +24,19 @@ func (q *Queries) CheckMenuByID(ctx context.Context, id int32) (int32, error) {
 	return column_1, err
 }
 
+const checkResourceByID = `-- name: CheckResourceByID :one
+SELECT 1
+FROM resource
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) CheckResourceByID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, checkResourceByID, id)
+	var column_1 int32
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const checkRoleByCode = `-- name: CheckRoleByCode :one
 SELECT 1
 FROM role
@@ -132,6 +145,40 @@ func (q *Queries) CreateMenu(ctx context.Context, arg CreateMenuParams) (Menu, e
 	return i, err
 }
 
+const createResource = `-- name: CreateResource :one
+INSERT INTO resource (menu_id, method, path, created, updated)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, menu_id, method, path, created, updated
+`
+
+type CreateResourceParams struct {
+	MenuID  int32
+	Method  string
+	Path    string
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+func (q *Queries) CreateResource(ctx context.Context, arg CreateResourceParams) (Resource, error) {
+	row := q.db.QueryRow(ctx, createResource,
+		arg.MenuID,
+		arg.Method,
+		arg.Path,
+		arg.Created,
+		arg.Updated,
+	)
+	var i Resource
+	err := row.Scan(
+		&i.ID,
+		&i.MenuID,
+		&i.Method,
+		&i.Path,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
 const createRole = `-- name: CreateRole :one
 INSERT INTO role (code, name, description, sequence, status, created, updated)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -229,6 +276,16 @@ func (q *Queries) DeleteMenu(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteResource = `-- name: DeleteResource :exec
+DELETE FROM resource
+WHERE id = $1
+`
+
+func (q *Queries) DeleteResource(ctx context.Context, id int32) error {
+	_, err := q.db.Exec(ctx, deleteResource, id)
+	return err
+}
+
 const deleteRole = `-- name: DeleteRole :exec
 DELETE FROM role
 WHERE id = $1
@@ -271,6 +328,27 @@ func (q *Queries) GetMenu(ctx context.Context, id int32) (Menu, error) {
 		&i.ParentID,
 		&i.ParentPath,
 		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
+const getResource = `-- name: GetResource :one
+SELECT id, menu_id, method, path, created, updated
+FROM resource
+WHERE id = $1 LIMIT 1
+`
+
+// Resource
+func (q *Queries) GetResource(ctx context.Context, id int32) (Resource, error) {
+	row := q.db.QueryRow(ctx, getResource, id)
+	var i Resource
+	err := row.Scan(
+		&i.ID,
+		&i.MenuID,
+		&i.Method,
+		&i.Path,
 		&i.Created,
 		&i.Updated,
 	)
@@ -486,6 +564,43 @@ func (q *Queries) UpdateMenu(ctx context.Context, arg UpdateMenuParams) (Menu, e
 		&i.ParentID,
 		&i.ParentPath,
 		&i.Status,
+		&i.Created,
+		&i.Updated,
+	)
+	return i, err
+}
+
+const updateResource = `-- name: UpdateResource :one
+UPDATE resource
+SET menu_id = $2, method = $3, path = $4, created = $5, updated = $6
+WHERE id = $1
+RETURNING id, menu_id, method, path, created, updated
+`
+
+type UpdateResourceParams struct {
+	ID      int32
+	MenuID  int32
+	Method  string
+	Path    string
+	Created pgtype.Timestamp
+	Updated pgtype.Timestamp
+}
+
+func (q *Queries) UpdateResource(ctx context.Context, arg UpdateResourceParams) (Resource, error) {
+	row := q.db.QueryRow(ctx, updateResource,
+		arg.ID,
+		arg.MenuID,
+		arg.Method,
+		arg.Path,
+		arg.Created,
+		arg.Updated,
+	)
+	var i Resource
+	err := row.Scan(
+		&i.ID,
+		&i.MenuID,
+		&i.Method,
+		&i.Path,
 		&i.Created,
 		&i.Updated,
 	)

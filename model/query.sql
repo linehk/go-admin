@@ -110,3 +110,29 @@ RETURNING *;
 -- name: DeleteMenu :exec
 DELETE FROM menu
 WHERE id = $1;
+
+-- Resource
+-- name: GetResource :one
+SELECT *
+FROM resource
+WHERE id = $1 LIMIT 1;
+
+-- name: CheckResourceByID :one
+SELECT 1
+FROM resource
+WHERE id = $1 LIMIT 1;
+
+-- name: CreateResource :one
+INSERT INTO resource (menu_id, method, path, created, updated)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+
+-- name: UpdateResource :one
+UPDATE resource
+SET menu_id = $2, method = $3, path = $4, created = $5, updated = $6
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteResource :exec
+DELETE FROM resource
+WHERE id = $1;
