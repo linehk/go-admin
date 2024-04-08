@@ -16,12 +16,14 @@ func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 
 	params, err := createRoleParams(req)
 	if err != nil {
-		returnErr(w, errcode.Convert)
+		Err(w, errcode.Convert)
+		return
 	}
 
 	role, err := a.DB.CreateRole(r.Context(), params)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	resp := roleResp(role)
@@ -38,7 +40,8 @@ func (a *API) GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetAp
 
 	roleList, err := a.DB.ListRole(r.Context(), modelParams)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	var respList []Role
@@ -54,7 +57,8 @@ func (a *API) DeleteApiV1RolesId(w http.ResponseWriter, r *http.Request, id int3
 
 	err := a.DB.DeleteRole(r.Context(), id)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 }
 
@@ -63,7 +67,8 @@ func (a *API) GetApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) 
 
 	role, err := a.DB.GetRole(r.Context(), id)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	resp := roleResp(role)
@@ -78,13 +83,15 @@ func (a *API) PutApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) 
 
 	params, err := updateRoleParams(req)
 	if err != nil {
-		returnErr(w, errcode.Convert)
+		Err(w, errcode.Convert)
+		return
 	}
 
 	params.ID = id
 	role, err := a.DB.UpdateRole(r.Context(), params)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	resp := roleResp(role)

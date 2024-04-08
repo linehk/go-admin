@@ -17,12 +17,14 @@ func (a *API) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 
 	params, err := createUserParams(req)
 	if err != nil {
-		returnErr(w, errcode.Convert)
+		Err(w, errcode.Convert)
+		return
 	}
 
 	user, err := a.DB.CreateUser(r.Context(), params)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	resp := userResp(user)
@@ -40,7 +42,8 @@ func (a *API) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetAp
 
 	userList, err := a.DB.ListUser(r.Context(), modelParams)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	var respList []User
@@ -56,7 +59,8 @@ func (a *API) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int3
 
 	err := a.DB.DeleteUser(r.Context(), id)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 }
 
@@ -65,7 +69,8 @@ func (a *API) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 
 	user, err := a.DB.GetUser(r.Context(), id)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	resp := userResp(user)
@@ -80,13 +85,15 @@ func (a *API) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 
 	params, err := updateUserParams(req)
 	if err != nil {
-		returnErr(w, errcode.Convert)
+		Err(w, errcode.Convert)
+		return
 	}
 
 	params.ID = id
 	user, err := a.DB.UpdateUser(r.Context(), params)
 	if err != nil {
-		returnErr(w, errcode.Database)
+		Err(w, errcode.Database)
+		return
 	}
 
 	resp := userResp(user)
