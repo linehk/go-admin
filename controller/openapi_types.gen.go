@@ -23,14 +23,15 @@ type Error struct {
 
 // Role defines model for Role.
 type Role struct {
-	Code        string      `json:"code"`
-	Created     *string     `json:"created,omitempty"`
-	Description *string     `json:"description,omitempty"`
-	Menu        *[]RoleMenu `json:"menu,omitempty"`
-	Name        string      `json:"name"`
-	Sequence    *int        `json:"sequence,omitempty"`
-	Status      *RoleStatus `json:"status,omitempty"`
-	Updated     *string     `json:"updated,omitempty"`
+	Code        string     `json:"code"`
+	Created     string     `json:"created"`
+	Description string     `json:"description"`
+	Id          *int32     `json:"id,omitempty"`
+	Menu        []RoleMenu `json:"menu"`
+	Name        string     `json:"name"`
+	Sequence    int16      `json:"sequence"`
+	Status      RoleStatus `json:"status"`
+	Updated     string     `json:"updated"`
 }
 
 // RoleStatus defines model for Role.Status.
@@ -38,25 +39,26 @@ type RoleStatus string
 
 // RoleMenu defines model for RoleMenu.
 type RoleMenu struct {
-	Created *string `json:"created,omitempty"`
-	Id      *int32  `json:"id,omitempty"`
-	MenuId  *int32  `json:"menu_id,omitempty"`
-	RoleId  *int32  `json:"role_id,omitempty"`
-	Updated *string `json:"updated,omitempty"`
+	Created string `json:"created"`
+	Id      *int32 `json:"id,omitempty"`
+	MenuId  int32  `json:"menu_id"`
+	RoleId  *int32 `json:"role_id,omitempty"`
+	Updated string `json:"updated"`
 }
 
 // User defines model for User.
 type User struct {
-	Created  *string     `json:"created,omitempty"`
-	Email    *string     `json:"email,omitempty"`
-	Name     *string     `json:"name,omitempty"`
-	Password string      `json:"password"`
-	Phone    *string     `json:"phone,omitempty"`
-	Remark   *string     `json:"remark,omitempty"`
-	Role     *[]UserRole `json:"role,omitempty"`
-	Status   *UserStatus `json:"status,omitempty"`
-	Updated  *string     `json:"updated,omitempty"`
-	Username string      `json:"username"`
+	Created  string     `json:"created"`
+	Email    string     `json:"email"`
+	Id       *int32     `json:"id,omitempty"`
+	Name     string     `json:"name"`
+	Password string     `json:"password"`
+	Phone    string     `json:"phone"`
+	Remark   string     `json:"remark"`
+	Role     []UserRole `json:"role"`
+	Status   UserStatus `json:"status"`
+	Updated  string     `json:"updated"`
+	Username string     `json:"username"`
 }
 
 // UserStatus defines model for User.Status.
@@ -64,29 +66,28 @@ type UserStatus string
 
 // UserRole defines model for UserRole.
 type UserRole struct {
-	Created  *string `json:"created,omitempty"`
-	Id       *int32  `json:"id,omitempty"`
-	RoleId   *int32  `json:"role_id,omitempty"`
-	RoleName *string `json:"role_name,omitempty"`
-	Updated  *string `json:"updated,omitempty"`
-	UserId   *int32  `json:"user_id,omitempty"`
+	Created string `json:"created"`
+	Id      *int32 `json:"id,omitempty"`
+	RoleId  int32  `json:"role_id"`
+	Updated string `json:"updated"`
+	UserId  *int32 `json:"user_id,omitempty"`
 }
 
 // GetApiV1RolesParams defines parameters for GetApiV1Roles.
 type GetApiV1RolesParams struct {
-	Name     *string `form:"name,omitempty" json:"name,omitempty"`
-	Status   *string `form:"status,omitempty" json:"status,omitempty"`
-	Current  int     `form:"current" json:"current"`
-	PageSize int     `form:"pageSize" json:"pageSize"`
+	Name     string `form:"name" json:"name"`
+	Status   string `form:"status" json:"status"`
+	Current  int32  `form:"current" json:"current"`
+	PageSize int32  `form:"pageSize" json:"pageSize"`
 }
 
 // GetApiV1UsersParams defines parameters for GetApiV1Users.
 type GetApiV1UsersParams struct {
-	Username *string `form:"username,omitempty" json:"username,omitempty"`
-	Name     *string `form:"name,omitempty" json:"name,omitempty"`
-	Status   *string `form:"status,omitempty" json:"status,omitempty"`
-	Current  int     `form:"current" json:"current"`
-	PageSize int     `form:"pageSize" json:"pageSize"`
+	Username string `form:"username" json:"username"`
+	Name     string `form:"name" json:"name"`
+	Status   string `form:"status" json:"status"`
+	Current  int32  `form:"current" json:"current"`
+	PageSize int32  `form:"pageSize" json:"pageSize"`
 }
 
 // PostApiV1RolesJSONRequestBody defines body for PostApiV1Roles for application/json ContentType.

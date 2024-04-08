@@ -32,29 +32,27 @@ func Setup() *http.ServeMux {
 }
 
 func decode(w http.ResponseWriter, r *http.Request, req any) {
-	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		ReturnErr(w, errcode.Parse)
+		returnErr(w, errcode.Parse)
 	}
 }
 
 func encode(w http.ResponseWriter, resp any) {
 	err := json.NewEncoder(w).Encode(&resp)
 	if err != nil {
-		ReturnErr(w, errcode.Parse)
+		returnErr(w, errcode.Parse)
 	}
 }
 
-func paging(current, pageSize int) (int32, int32) {
+func paging(current, pageSize int32) (int32, int32) {
 	if current > 0 && pageSize > 0 {
-		return int32((current - 1) * pageSize), int32(pageSize)
+		return (current - 1) * pageSize, pageSize
 	}
-	return int32(current), int32(pageSize)
+	return current, pageSize
 }
 
-func ReturnErr(w http.ResponseWriter, e int32) {
-	w.Header().Set("Content-Type", "application/json")
+func returnErr(w http.ResponseWriter, e int32) {
 	errResp := Error{
 		Code:    e,
 		Message: errcode.Msg(e),
@@ -66,3 +64,5 @@ func ReturnErr(w http.ResponseWriter, e int32) {
 	slog.Error("err: ", err)
 	w.WriteHeader(http.StatusBadRequest)
 }
+
+const pgTimestampFormat = "2006-01-02 15:04:05.999999999"
