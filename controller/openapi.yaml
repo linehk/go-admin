@@ -11,28 +11,38 @@ paths:
           in: query
           schema:
             type: string
+            x-oapi-codegen-extra-tags:
+              validate: max=64
           required: true
         - name: name
           in: query
           schema:
             type: string
+            x-oapi-codegen-extra-tags:
+              validate: max=64
           required: true
         - name: status
           in: query
           schema:
             type: string
+            x-oapi-codegen-extra-tags:
+              validate: oneof=activated frozen
           required: true
         - name: current
           in: query
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=0
           required: true
         - name: pageSize
           in: query
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       responses:
         '200':
@@ -77,6 +87,8 @@ paths:
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       responses:
         '200':
@@ -98,6 +110,8 @@ paths:
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       responses:
         '200':
@@ -116,6 +130,8 @@ paths:
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       requestBody:
         required: true
@@ -140,23 +156,31 @@ paths:
           in: query
           schema:
             type: string
+            x-oapi-codegen-extra-tags:
+              validate: max=64
           required: true
         - name: status
           in: query
           schema:
             type: string
+            x-oapi-codegen-extra-tags:
+              validate: oneof=enabled disabled
           required: true
         - name: current
           in: query
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=0
           required: true
         - name: pageSize
           in: query
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       responses:
         '200':
@@ -201,6 +225,8 @@ paths:
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       responses:
         '200':
@@ -222,6 +248,8 @@ paths:
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       responses:
         '200':
@@ -240,6 +268,8 @@ paths:
           schema:
             type: integer
             format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
           required: true
       requestBody:
         required: true
@@ -278,21 +308,35 @@ components:
           format: int32
         username:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         password:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         name:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         email:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: email
         phone:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: e164
         remark:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=1024
         status:
           type: string
           enum:
             - activated
             - frozen
+          x-oapi-codegen-extra-tags:
+            validate: oneof=activated frozen
         created:
           type: string
         updated:
@@ -325,6 +369,8 @@ components:
         role_id:
           type: integer
           format: int32
+          x-oapi-codegen-extra-tags:
+            validate: min=1
         created:
           type: string
         updated:
@@ -342,15 +388,25 @@ components:
           format: int32
         code:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         name:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         description:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=1024
         sequence:
           type: integer
           format: int16
+          x-oapi-codegen-extra-tags:
+            validate: min=1
         status:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: oneof=enabled disabled
           enum:
             - enabled
             - disabled
@@ -384,6 +440,8 @@ components:
         menu_id:
           type: integer
           format: int32
+          x-oapi-codegen-extra-tags:
+            validate: min=1
         created:
           type: string
         updated:
@@ -401,26 +459,46 @@ components:
           format: int32
         code:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         name:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         description:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=1024
         sequence:
           type: integer
           format: int16
+          x-oapi-codegen-extra-tags:
+            validate: min=1
         type:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         path:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=1024
         property:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         parent_id:
           type: integer
           format: int32
+          x-oapi-codegen-extra-tags:
+            validate: min=1
         parent_path:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=1024
         status:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: oneof=enabled disabled
           enum:
             - enabled
             - disabled
@@ -452,8 +530,12 @@ components:
           format: int32
         method:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=64
         path:
           type: string
+          x-oapi-codegen-extra-tags:
+            validate: max=1024
         created:
           type: string
         updated:

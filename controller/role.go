@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/linehk/go-admin/errcode"
 	"github.com/linehk/go-admin/model"
 )
@@ -13,6 +14,11 @@ func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 
 	var req Role
 	decode(w, r, &req)
+	err := validator.New().Struct(req)
+	if err != nil {
+		Err(w, errcode.Validate)
+		return
+	}
 
 	params, err := createRoleParams(req)
 	if err != nil {
@@ -32,6 +38,12 @@ func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetApiV1RolesParams) {
 	w.Header().Set("Content-Type", "application/json")
+	
+	err := validator.New().Struct(params)
+	if err != nil {
+		Err(w, errcode.Validate)
+		return
+	}
 
 	var modelParams model.ListRoleParams
 	modelParams.Column1 = params.Name

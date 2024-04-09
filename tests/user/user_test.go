@@ -19,8 +19,8 @@ var (
 "username": "username1",
 "password": "password1",
 "name": "name1",
-"email": "email1",
-"phone": "phone1",
+"email": "example1@gmail.com",
+"phone": "+14155552671",
 "remark": "remark1",
 "status": "activated",
 "created": "2024-04-04 13:56:35.671521",
@@ -30,8 +30,8 @@ var (
 	id1       int32 = 1
 	username1       = "username1"
 	name1           = "name1"
-	email1          = "email1"
-	phone1          = "phone1"
+	email1          = "example1@gmail.com"
+	phone1          = "+14155552671"
 	remark1         = "remark1"
 	status1         = controller.Activated
 	created1        = "2024-04-04 13:56:35.671521"
@@ -54,8 +54,8 @@ var (
 "username": "username2",
 "password": "password2",
 "name": "name2",
-"email": "email2",
-"phone": "phone2",
+"email": "example2@gmail.com",
+"phone": "+442071838750",
 "remark": "remark2",
 "status": "activated",
 "created": "2024-03-04 13:56:35.671521",
@@ -65,8 +65,8 @@ var (
 	id2       int32 = 2
 	username2       = "username2"
 	name2           = "name2"
-	email2          = "email2"
-	phone2          = "phone2"
+	email2          = "example2@gmail.com"
+	phone2          = "+442071838750"
 	remark2         = "remark2"
 	status2         = controller.Activated
 	created2        = "2024-03-04 13:56:35.671521"

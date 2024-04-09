@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/linehk/go-admin/errcode"
 	"github.com/linehk/go-admin/model"
 	"golang.org/x/crypto/bcrypt"
@@ -14,6 +15,11 @@ func (a *API) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 
 	var req User
 	decode(w, r, &req)
+	err := validator.New().Struct(req)
+	if err != nil {
+		Err(w, errcode.Validate)
+		return
+	}
 
 	params, err := createUserParams(req)
 	if err != nil {
@@ -33,6 +39,12 @@ func (a *API) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetApiV1UsersParams) {
 	w.Header().Set("Content-Type", "application/json")
+
+	err := validator.New().Struct(params)
+	if err != nil {
+		Err(w, errcode.Validate)
+		return
+	}
 
 	var modelParams model.ListUserParams
 	modelParams.Column1 = params.Username

@@ -23,14 +23,14 @@ type Error struct {
 
 // Role defines model for Role.
 type Role struct {
-	Code        string     `json:"code"`
+	Code        string     `json:"code" validate:"max=64"`
 	Created     string     `json:"created"`
-	Description string     `json:"description"`
+	Description string     `json:"description" validate:"max=1024"`
 	Id          *int32     `json:"id,omitempty"`
 	Menu        []RoleMenu `json:"menu"`
-	Name        string     `json:"name"`
-	Sequence    int16      `json:"sequence"`
-	Status      RoleStatus `json:"status"`
+	Name        string     `json:"name" validate:"max=64"`
+	Sequence    int16      `json:"sequence" validate:"min=1"`
+	Status      RoleStatus `json:"status" validate:"oneof=enabled disabled"`
 	Updated     string     `json:"updated"`
 }
 
@@ -41,7 +41,7 @@ type RoleStatus string
 type RoleMenu struct {
 	Created string `json:"created"`
 	Id      *int32 `json:"id,omitempty"`
-	MenuId  int32  `json:"menu_id"`
+	MenuId  int32  `json:"menu_id" validate:"min=1"`
 	RoleId  *int32 `json:"role_id,omitempty"`
 	Updated string `json:"updated"`
 }
@@ -49,16 +49,16 @@ type RoleMenu struct {
 // User defines model for User.
 type User struct {
 	Created  string     `json:"created"`
-	Email    string     `json:"email"`
+	Email    string     `json:"email" validate:"email"`
 	Id       *int32     `json:"id,omitempty"`
-	Name     string     `json:"name"`
-	Password string     `json:"password"`
-	Phone    string     `json:"phone"`
-	Remark   string     `json:"remark"`
+	Name     string     `json:"name" validate:"max=64"`
+	Password string     `json:"password" validate:"max=64"`
+	Phone    string     `json:"phone" validate:"e164"`
+	Remark   string     `json:"remark" validate:"max=1024"`
 	Role     []UserRole `json:"role"`
-	Status   UserStatus `json:"status"`
+	Status   UserStatus `json:"status" validate:"oneof=activated frozen"`
 	Updated  string     `json:"updated"`
-	Username string     `json:"username"`
+	Username string     `json:"username" validate:"max=64"`
 }
 
 // UserStatus defines model for User.Status.
@@ -68,7 +68,7 @@ type UserStatus string
 type UserRole struct {
 	Created string `json:"created"`
 	Id      *int32 `json:"id,omitempty"`
-	RoleId  int32  `json:"role_id"`
+	RoleId  int32  `json:"role_id" validate:"min=1"`
 	Updated string `json:"updated"`
 	UserId  *int32 `json:"user_id,omitempty"`
 }
