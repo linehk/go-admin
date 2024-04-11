@@ -12,68 +12,58 @@ import (
 )
 
 const checkMenuByID = `-- name: CheckMenuByID :one
-SELECT 1
-FROM menu
-WHERE id = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM menu WHERE id = $1)
 `
 
-func (q *Queries) CheckMenuByID(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) CheckMenuByID(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRow(ctx, checkMenuByID, id)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkResourceByID = `-- name: CheckResourceByID :one
-SELECT 1
-FROM resource
-WHERE id = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM resource WHERE id = $1)
 `
 
-func (q *Queries) CheckResourceByID(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) CheckResourceByID(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRow(ctx, checkResourceByID, id)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkRoleByCode = `-- name: CheckRoleByCode :one
-SELECT 1
-FROM role
-WHERE code = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM role WHERE code = $1)
 `
 
-func (q *Queries) CheckRoleByCode(ctx context.Context, code string) (int32, error) {
+func (q *Queries) CheckRoleByCode(ctx context.Context, code string) (bool, error) {
 	row := q.db.QueryRow(ctx, checkRoleByCode, code)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkRoleByID = `-- name: CheckRoleByID :one
-SELECT 1
-FROM role
-WHERE id = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM role WHERE id = $1)
 `
 
-func (q *Queries) CheckRoleByID(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) CheckRoleByID(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRow(ctx, checkRoleByID, id)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkRoleMenuByID = `-- name: CheckRoleMenuByID :one
-SELECT 1
-FROM role_menu
-WHERE id = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM role_menu WHERE id = $1)
 `
 
-func (q *Queries) CheckRoleMenuByID(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) CheckRoleMenuByID(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRow(ctx, checkRoleMenuByID, id)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkUserByID = `-- name: CheckUserByID :one
@@ -99,16 +89,14 @@ func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (boo
 }
 
 const checkUserRoleByID = `-- name: CheckUserRoleByID :one
-SELECT 1
-FROM user_role
-WHERE id = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM user_role WHERE id = $1)
 `
 
-func (q *Queries) CheckUserRoleByID(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) CheckUserRoleByID(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRow(ctx, checkUserRoleByID, id)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const createMenu = `-- name: CreateMenu :one
@@ -557,6 +545,39 @@ func (q *Queries) GetUserRole(ctx context.Context, id int32) (UserRole, error) {
 	return i, err
 }
 
+const listResourceByMenuIDList = `-- name: ListResourceByMenuIDList :many
+SELECT id, menu_id, method, path, created, updated
+FROM resource
+WHERE menu_id = ANY($1::int[])
+`
+
+func (q *Queries) ListResourceByMenuIDList(ctx context.Context, dollar_1 []int32) ([]Resource, error) {
+	rows, err := q.db.Query(ctx, listResourceByMenuIDList, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Resource
+	for rows.Next() {
+		var i Resource
+		if err := rows.Scan(
+			&i.ID,
+			&i.MenuID,
+			&i.Method,
+			&i.Path,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRole = `-- name: ListRole :many
 SELECT id, code, name, description, sequence, status, created, updated
 FROM role
@@ -595,6 +616,38 @@ func (q *Queries) ListRole(ctx context.Context, arg ListRoleParams) ([]Role, err
 			&i.Description,
 			&i.Sequence,
 			&i.Status,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRoleMenuByRoleIDList = `-- name: ListRoleMenuByRoleIDList :many
+SELECT id, role_id, menu_id, created, updated
+FROM role_menu
+WHERE role_id = ANY($1::int[])
+`
+
+func (q *Queries) ListRoleMenuByRoleIDList(ctx context.Context, dollar_1 []int32) ([]RoleMenu, error) {
+	rows, err := q.db.Query(ctx, listRoleMenuByRoleIDList, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []RoleMenu
+	for rows.Next() {
+		var i RoleMenu
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoleID,
+			&i.MenuID,
 			&i.Created,
 			&i.Updated,
 		); err != nil {
@@ -664,14 +717,14 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, 
 	return items, nil
 }
 
-const listUserRole = `-- name: ListUserRole :many
+const listUserRoleByUserIDList = `-- name: ListUserRoleByUserIDList :many
 SELECT id, user_id, role_id, created, updated
 FROM user_role
 WHERE user_id = ANY($1::int[])
 `
 
-func (q *Queries) ListUserRole(ctx context.Context, dollar_1 []int32) ([]UserRole, error) {
-	rows, err := q.db.Query(ctx, listUserRole, dollar_1)
+func (q *Queries) ListUserRoleByUserIDList(ctx context.Context, dollar_1 []int32) ([]UserRole, error) {
+	rows, err := q.db.Query(ctx, listUserRoleByUserIDList, dollar_1)
 	if err != nil {
 		return nil, err
 	}

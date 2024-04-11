@@ -114,7 +114,7 @@ func (a *API) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetAp
 		respList = append(respList, userResp(userModel))
 	}
 
-	userRoleList, err := query.ListUserRole(ctx, userIDList)
+	userRoleList, err := query.ListUserRoleByUserIDList(ctx, userIDList)
 	if err != nil {
 		Err(w, errcode.Database)
 		return
@@ -193,7 +193,7 @@ func (a *API) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 		return
 	}
 
-	userRoleList, err := query.ListUserRole(ctx, []int32{user.ID})
+	userRoleList, err := query.ListUserRoleByUserIDList(ctx, []int32{user.ID})
 	if err != nil {
 		Err(w, errcode.Database)
 		return

@@ -44,15 +44,13 @@ SELECT *
 FROM user_role
 WHERE id = $1 LIMIT 1;
 
--- name: ListUserRole :many
+-- name: ListUserRoleByUserIDList :many
 SELECT *
 FROM user_role
 WHERE user_id = ANY($1::int[]);
 
 -- name: CheckUserRoleByID :one
-SELECT 1
-FROM user_role
-WHERE id = $1 LIMIT 1;
+SELECT EXISTS (SELECT 1 FROM user_role WHERE id = $1);
 
 -- name: CreateUserRole :one
 INSERT INTO user_role (user_id, role_id, created, updated)
@@ -90,14 +88,10 @@ ORDER BY sequence, created DESC
 LIMIT $4;
 
 -- name: CheckRoleByID :one
-SELECT 1
-FROM role
-WHERE id = $1 LIMIT 1;
+SELECT EXISTS (SELECT 1 FROM role WHERE id = $1);
 
 -- name: CheckRoleByCode :one
-SELECT 1
-FROM role
-WHERE code = $1 LIMIT 1;
+SELECT EXISTS (SELECT 1 FROM role WHERE code = $1);
 
 -- name: CreateRole :one
 INSERT INTO role (code, name, description, sequence, status, created, updated)
@@ -122,10 +116,13 @@ SELECT *
 FROM role_menu
 WHERE id = $1 LIMIT 1;
 
--- name: CheckRoleMenuByID :one
-SELECT 1
+-- name: ListRoleMenuByRoleIDList :many
+SELECT *
 FROM role_menu
-WHERE id = $1 LIMIT 1;
+WHERE role_id = ANY($1::int[]);
+
+-- name: CheckRoleMenuByID :one
+SELECT EXISTS (SELECT 1 FROM role_menu WHERE id = $1);
 
 -- name: CreateRoleMenu :one
 INSERT INTO role_menu (role_id, menu_id, created, updated)
@@ -150,9 +147,7 @@ FROM menu
 WHERE id = $1 LIMIT 1;
 
 -- name: CheckMenuByID :one
-SELECT 1
-FROM menu
-WHERE id = $1 LIMIT 1;
+SELECT EXISTS (SELECT 1 FROM menu WHERE id = $1);
 
 -- name: CreateMenu :one
 INSERT INTO menu (code, name, description, sequence, type, path, property,
@@ -179,10 +174,13 @@ SELECT *
 FROM resource
 WHERE id = $1 LIMIT 1;
 
--- name: CheckResourceByID :one
-SELECT 1
+-- name: ListResourceByMenuIDList :many
+SELECT *
 FROM resource
-WHERE id = $1 LIMIT 1;
+WHERE menu_id = ANY($1::int[]);
+
+-- name: CheckResourceByID :one
+SELECT EXISTS (SELECT 1 FROM resource WHERE id = $1);
 
 -- name: CreateResource :one
 INSERT INTO resource (menu_id, method, path, created, updated)
