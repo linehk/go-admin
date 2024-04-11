@@ -15,14 +15,10 @@ ORDER BY created DESC
 LIMIT $5;
 
 -- name: CheckUserByID :one
-SELECT 1
-FROM app_user
-WHERE id = $1 LIMIT 1;
+SELECT EXISTS (SELECT 1 FROM app_user WHERE id = $1);
 
 -- name: CheckUserByUsername :one
-SELECT 1
-FROM app_user
-WHERE username = $1 LIMIT 1;
+SELECT EXISTS (SELECT 1 FROM app_user WHERE username = $1);
 
 -- name: CreateUser :one
 INSERT INTO app_user (username, password, name, email, phone, remark, status,
@@ -48,6 +44,11 @@ SELECT *
 FROM user_role
 WHERE id = $1 LIMIT 1;
 
+-- name: ListUserRole :many
+SELECT *
+FROM user_role
+WHERE user_id = ANY($1::int[]);
+
 -- name: CheckUserRoleByID :one
 SELECT 1
 FROM user_role
@@ -67,6 +68,10 @@ RETURNING *;
 -- name: DeleteUserRole :exec
 DELETE FROM user_role
 WHERE id = $1;
+
+-- name: DeleteUserRoleByUserID :exec
+DELETE FROM user_role
+WHERE user_id = $1;
 
 
 --------------------------------- Role --------------------------------

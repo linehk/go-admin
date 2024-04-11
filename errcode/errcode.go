@@ -5,6 +5,9 @@ const (
 	Database int32 = 20001
 	Convert  int32 = 20002
 	Validate int32 = 20003
+
+	UsernameOccupy int32 = 30000
+	UserNotExist   int32 = 30001
 )
 
 var msg = map[int32]string{
@@ -12,6 +15,9 @@ var msg = map[int32]string{
 	Database: "database error",
 	Convert:  "convert error",
 	Validate: "validate error",
+
+	UsernameOccupy: "username occupy",
+	UserNotExist:   "user not exist",
 }
 
 func Msg(e int32) string {

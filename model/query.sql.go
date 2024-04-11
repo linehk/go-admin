@@ -77,29 +77,25 @@ func (q *Queries) CheckRoleMenuByID(ctx context.Context, id int32) (int32, error
 }
 
 const checkUserByID = `-- name: CheckUserByID :one
-SELECT 1
-FROM app_user
-WHERE id = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM app_user WHERE id = $1)
 `
 
-func (q *Queries) CheckUserByID(ctx context.Context, id int32) (int32, error) {
+func (q *Queries) CheckUserByID(ctx context.Context, id int32) (bool, error) {
 	row := q.db.QueryRow(ctx, checkUserByID, id)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkUserByUsername = `-- name: CheckUserByUsername :one
-SELECT 1
-FROM app_user
-WHERE username = $1 LIMIT 1
+SELECT EXISTS (SELECT 1 FROM app_user WHERE username = $1)
 `
 
-func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (int32, error) {
+func (q *Queries) CheckUserByUsername(ctx context.Context, username string) (bool, error) {
 	row := q.db.QueryRow(ctx, checkUserByUsername, username)
-	var column_1 int32
-	err := row.Scan(&column_1)
-	return column_1, err
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const checkUserRoleByID = `-- name: CheckUserRoleByID :one
@@ -414,6 +410,16 @@ func (q *Queries) DeleteUserRole(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteUserRoleByUserID = `-- name: DeleteUserRoleByUserID :exec
+DELETE FROM user_role
+WHERE user_id = $1
+`
+
+func (q *Queries) DeleteUserRoleByUserID(ctx context.Context, userID int32) error {
+	_, err := q.db.Exec(ctx, deleteUserRoleByUserID, userID)
+	return err
+}
+
 const getMenu = `-- name: GetMenu :one
 SELECT id, code, name, description, sequence, type, path, property, parent_id, parent_path, status, created, updated
 FROM menu
@@ -645,6 +651,38 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]AppUser, 
 			&i.Phone,
 			&i.Remark,
 			&i.Status,
+			&i.Created,
+			&i.Updated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserRole = `-- name: ListUserRole :many
+SELECT id, user_id, role_id, created, updated
+FROM user_role
+WHERE user_id = ANY($1::int[])
+`
+
+func (q *Queries) ListUserRole(ctx context.Context, dollar_1 []int32) ([]UserRole, error) {
+	rows, err := q.db.Query(ctx, listUserRole, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []UserRole
+	for rows.Next() {
+		var i UserRole
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.RoleID,
 			&i.Created,
 			&i.Updated,
 		); err != nil {

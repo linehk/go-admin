@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/linehk/go-admin/controller"
-	"github.com/linehk/go-admin/model"
 	"github.com/linehk/go-admin/tests"
 	"github.com/stretchr/testify/assert"
 )
@@ -76,7 +76,7 @@ var (
 	}
 )
 
-func createRole(db *model.Queries, reqJSON string) controller.Role {
+func createRole(db *pgx.Conn, reqJSON string) controller.Role {
 	req := httptest.NewRequest(http.MethodPost, tests.BaseURL+"api/v1/roles", strings.NewReader(reqJSON))
 	r := httptest.NewRecorder()
 	api := &controller.API{DB: db}

@@ -7,13 +7,14 @@ import (
 	"log/slog"
 	"net/http"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/linehk/go-admin/config"
 	"github.com/linehk/go-admin/errcode"
 	"github.com/linehk/go-admin/model"
 )
 
 type API struct {
-	DB *model.Queries
+	DB *pgx.Conn
 }
 
 func Setup() *http.ServeMux {

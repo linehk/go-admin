@@ -11,6 +11,7 @@ import (
 
 func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
 
 	var req Role
 	decode(w, r, &req)
@@ -26,7 +27,8 @@ func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	role, err := a.DB.CreateRole(r.Context(), params)
+	query := model.New(a.DB)
+	role, err := query.CreateRole(ctx, params)
 	if err != nil {
 		Err(w, errcode.Database)
 		return
@@ -38,7 +40,8 @@ func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetApiV1RolesParams) {
 	w.Header().Set("Content-Type", "application/json")
-	
+	ctx := r.Context()
+
 	err := validator.New().Struct(params)
 	if err != nil {
 		Err(w, errcode.Validate)
@@ -50,7 +53,8 @@ func (a *API) GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetAp
 	modelParams.Column2 = params.Status
 	modelParams.ID, modelParams.Limit = paging(params.Current, params.PageSize)
 
-	roleList, err := a.DB.ListRole(r.Context(), modelParams)
+	query := model.New(a.DB)
+	roleList, err := query.ListRole(ctx, modelParams)
 	if err != nil {
 		Err(w, errcode.Database)
 		return
@@ -66,8 +70,10 @@ func (a *API) GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetAp
 
 func (a *API) DeleteApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) {
 	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
 
-	err := a.DB.DeleteRole(r.Context(), id)
+	query := model.New(a.DB)
+	err := query.DeleteRole(ctx, id)
 	if err != nil {
 		Err(w, errcode.Database)
 		return
@@ -76,8 +82,10 @@ func (a *API) DeleteApiV1RolesId(w http.ResponseWriter, r *http.Request, id int3
 
 func (a *API) GetApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) {
 	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
 
-	role, err := a.DB.GetRole(r.Context(), id)
+	query := model.New(a.DB)
+	role, err := query.GetRole(ctx, id)
 	if err != nil {
 		Err(w, errcode.Database)
 		return
@@ -89,6 +97,7 @@ func (a *API) GetApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) 
 
 func (a *API) PutApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) {
 	w.Header().Set("Content-Type", "application/json")
+	ctx := r.Context()
 
 	var req Role
 	decode(w, r, &req)
@@ -99,8 +108,9 @@ func (a *API) PutApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) 
 		return
 	}
 
+	query := model.New(a.DB)
 	params.ID = id
-	role, err := a.DB.UpdateRole(r.Context(), params)
+	role, err := query.UpdateRole(ctx, params)
 	if err != nil {
 		Err(w, errcode.Database)
 		return
