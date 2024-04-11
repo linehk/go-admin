@@ -358,6 +358,16 @@ func (q *Queries) DeleteResource(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteResourceByMenuID = `-- name: DeleteResourceByMenuID :exec
+DELETE FROM resource
+WHERE menu_id = $1
+`
+
+func (q *Queries) DeleteResourceByMenuID(ctx context.Context, menuID int32) error {
+	_, err := q.db.Exec(ctx, deleteResourceByMenuID, menuID)
+	return err
+}
+
 const deleteRole = `-- name: DeleteRole :exec
 DELETE FROM role
 WHERE id = $1
@@ -375,6 +385,16 @@ WHERE id = $1
 
 func (q *Queries) DeleteRoleMenu(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteRoleMenu, id)
+	return err
+}
+
+const deleteRoleMenuByRoleID = `-- name: DeleteRoleMenuByRoleID :exec
+DELETE FROM role_menu
+WHERE role_id = $1
+`
+
+func (q *Queries) DeleteRoleMenuByRoleID(ctx context.Context, roleID int32) error {
+	_, err := q.db.Exec(ctx, deleteRoleMenuByRoleID, roleID)
 	return err
 }
 

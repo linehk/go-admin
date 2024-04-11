@@ -22,26 +22,49 @@ var (
 "sequence": 1,
 "status": "enabled",
 "created": "2024-04-04 13:56:35.671521",
-"updated": "2024-04-05 13:56:35.671521"
+"updated": "2024-04-05 13:56:35.671521",
+"menu": [
+    {
+        "menu_id": 1,
+        "created": "2024-04-04 13:56:35.671521",
+        "updated": "2024-04-05 13:56:35.671521"
+    },
+    {
+        "menu_id": 2,
+        "created": "2024-04-04 13:56:35.671521",
+        "updated": "2024-04-05 13:56:35.671521"
+    }
+]
 }`
 
-	id1          int32 = 1
-	code1              = "code1"
-	name1              = "name1"
-	description1       = "description1"
-	sequence1    int16 = 1
-	status1            = controller.Enabled
-	created1           = "2024-04-04 13:56:35.671521"
-	updated1           = "2024-04-05 13:56:35.671521"
-	role1              = controller.Role{
+	id1         int32 = 1
+	roleMenuId1 int32 = 1
+	roleMenuId2 int32 = 2
+	role1             = controller.Role{
 		Id:          &id1,
-		Name:        name1,
-		Code:        code1,
-		Description: description1,
-		Sequence:    sequence1,
-		Status:      status1,
-		Created:     created1,
-		Updated:     updated1,
+		Code:        "code1",
+		Name:        "name1",
+		Description: "description1",
+		Sequence:    1,
+		Status:      controller.Enabled,
+		Created:     "2024-04-04 13:56:35.671521",
+		Updated:     "2024-04-05 13:56:35.671521",
+		Menu: []controller.RoleMenu{
+			{
+				Id:      &roleMenuId1,
+				RoleId:  &id1,
+				MenuId:  1,
+				Created: "2024-04-04 13:56:35.671521",
+				Updated: "2024-04-05 13:56:35.671521",
+			},
+			{
+				Id:      &roleMenuId2,
+				RoleId:  &id1,
+				MenuId:  2,
+				Created: "2024-04-04 13:56:35.671521",
+				Updated: "2024-04-05 13:56:35.671521",
+			},
+		},
 	}
 )
 
@@ -53,26 +76,49 @@ var (
 "sequence": 2,
 "status": "enabled",
 "created": "2024-03-04 13:56:35.671521",
-"updated": "2024-03-05 13:56:35.671521"
+"updated": "2024-03-05 13:56:35.671521",
+"menu": [
+    {
+        "menu_id": 3,
+        "created": "2024-04-04 13:56:35.671521",
+        "updated": "2024-04-05 13:56:35.671521"
+    },
+    {
+        "menu_id": 4,
+        "created": "2024-04-04 13:56:35.671521",
+        "updated": "2024-04-05 13:56:35.671521"
+    }
+]
 }`
 
-	id2          int32 = 2
-	code2              = "code2"
-	name2              = "name2"
-	description2       = "description2"
-	sequence2    int16 = 2
-	status2            = controller.Enabled
-	created2           = "2024-03-04 13:56:35.671521"
-	updated2           = "2024-03-05 13:56:35.671521"
-	role2              = controller.Role{
+	id2         int32 = 2
+	roleMenuId3 int32 = 3
+	roleMenuId4 int32 = 4
+	role2             = controller.Role{
 		Id:          &id2,
-		Name:        name2,
-		Code:        code2,
-		Description: description2,
-		Sequence:    sequence2,
-		Status:      status2,
-		Created:     created2,
-		Updated:     updated2,
+		Code:        "code2",
+		Name:        "name2",
+		Description: "description2",
+		Sequence:    2,
+		Status:      controller.Enabled,
+		Created:     "2024-03-04 13:56:35.671521",
+		Updated:     "2024-03-05 13:56:35.671521",
+		Menu: []controller.RoleMenu{
+			{
+				Id:      &roleMenuId3,
+				RoleId:  &id2,
+				MenuId:  3,
+				Created: "2024-04-04 13:56:35.671521",
+				Updated: "2024-04-05 13:56:35.671521",
+			},
+			{
+				Id:      &roleMenuId4,
+				RoleId:  &id2,
+				MenuId:  4,
+				Created: "2024-04-04 13:56:35.671521",
+				Updated: "2024-04-05 13:56:35.671521",
+			},
+		},
 	}
 )
 
@@ -136,7 +182,11 @@ func TestPutApiV1RolesId(t *testing.T) {
 
 	var actual controller.Role
 	_ = json.NewDecoder(r.Body).Decode(&actual)
+	// ignore id
 	actual.Id = &id2
+	for i := range actual.Menu {
+		actual.Menu[i].RoleId = &id2
+	}
 
 	assert.Equal(t, role2, actual)
 }

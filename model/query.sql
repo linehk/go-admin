@@ -139,6 +139,10 @@ RETURNING *;
 DELETE FROM role_menu
 WHERE id = $1;
 
+-- name: DeleteRoleMenuByRoleID :exec
+DELETE FROM role_menu
+WHERE role_id = $1;
+
 
 --------------------------------- Menu --------------------------------
 -- name: GetMenu :one
@@ -196,3 +200,7 @@ RETURNING *;
 -- name: DeleteResource :exec
 DELETE FROM resource
 WHERE id = $1;
+
+-- name: DeleteResourceByMenuID :exec
+DELETE FROM resource
+WHERE menu_id = $1;

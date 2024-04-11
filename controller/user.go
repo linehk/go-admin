@@ -43,6 +43,7 @@ func (a *API) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	query := model.New(transaction)
+
 	exist, err := query.CheckUserByUsername(ctx, params.Username)
 	if err != nil {
 		Err(w, errcode.Database)
@@ -52,6 +53,7 @@ func (a *API) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 		Err(w, errcode.UsernameOccupy)
 		return
 	}
+
 	user, err := query.CreateUser(ctx, params)
 	if err != nil {
 		Err(w, errcode.Database)
@@ -65,11 +67,13 @@ func (a *API) PostApiV1Users(w http.ResponseWriter, r *http.Request) {
 			Err(w, errcode.Convert)
 			return
 		}
+
 		userRole, err := query.CreateUserRole(ctx, params)
 		if err != nil {
 			Err(w, errcode.Database)
 			return
 		}
+
 		userRoleList = append(userRoleList, userRoleResp(userRole))
 	}
 
@@ -101,6 +105,7 @@ func (a *API) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetAp
 	modelParams.ID, modelParams.Limit = paging(params.Current, params.PageSize)
 
 	query := model.New(a.DB)
+
 	userList, err := query.ListUser(ctx, modelParams)
 	if err != nil {
 		Err(w, errcode.Database)
@@ -149,6 +154,7 @@ func (a *API) DeleteApiV1UsersId(w http.ResponseWriter, r *http.Request, id int3
 	}()
 
 	query := model.New(transaction)
+
 	exist, err := query.CheckUserByID(ctx, id)
 	if err != nil {
 		Err(w, errcode.Database)
@@ -183,6 +189,7 @@ func (a *API) GetApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 	ctx := r.Context()
 
 	query := model.New(a.DB)
+
 	user, err := query.GetUser(ctx, id)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		Err(w, errcode.Database)
@@ -238,7 +245,9 @@ func (a *API) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 			panic(err)
 		}
 	}()
+
 	query := model.New(transaction)
+
 	userByGet, err := query.GetUser(ctx, id)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		Err(w, errcode.Database)
@@ -248,9 +257,10 @@ func (a *API) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 		Err(w, errcode.UserNotExist)
 		return
 	}
+
 	// update username
 	if req.Username != userByGet.Username {
-		exist, err := query.CheckUserByUsername(ctx, params.Username)
+		exist, err := query.CheckUserByUsername(ctx, req.Username)
 		if err != nil {
 			Err(w, errcode.Database)
 			return
@@ -262,6 +272,7 @@ func (a *API) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 	}
 
 	params.ID = id
+
 	userByUpdate, err := query.UpdateUser(ctx, params)
 	if err != nil {
 		Err(w, errcode.Database)
@@ -281,11 +292,13 @@ func (a *API) PutApiV1UsersId(w http.ResponseWriter, r *http.Request, id int32) 
 			Err(w, errcode.Convert)
 			return
 		}
+
 		userRole, err := query.CreateUserRole(ctx, params)
 		if err != nil {
 			Err(w, errcode.Database)
 			return
 		}
+		
 		userRoleList = append(userRoleList, userRoleResp(userRole))
 	}
 
