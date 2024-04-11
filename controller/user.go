@@ -109,9 +109,9 @@ func (a *API) GetApiV1Users(w http.ResponseWriter, r *http.Request, params GetAp
 
 	var userIDList []int32
 	var respList []User
-	for _, userModel := range userList {
-		userIDList = append(userIDList, userModel.ID)
-		respList = append(respList, userResp(userModel))
+	for _, user := range userList {
+		userIDList = append(userIDList, user.ID)
+		respList = append(respList, userResp(user))
 	}
 
 	userRoleList, err := query.ListUserRoleByUserIDList(ctx, userIDList)
