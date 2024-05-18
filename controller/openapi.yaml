@@ -287,6 +287,128 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/v1/menus:
+    get:
+      parameters:
+        - name: codePath
+          in: query
+          schema:
+            type: string
+            x-oapi-codegen-extra-tags:
+              validate: max=64
+          required: true
+        - name: name
+          in: query
+          schema:
+            type: string
+            x-oapi-codegen-extra-tags:
+              validate: max=64
+          required: true
+      responses:
+        '200':
+          description: empty
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Menu'
+        default:
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Menu'
+      responses:
+        '200':
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Menu'
+        default:
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/menus/{id}:
+    get:
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+            format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
+          required: true
+      responses:
+        '200':
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Menu'
+        default:
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+            format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
+          required: true
+      responses:
+        '200':
+          description: empty
+        default:
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+            format: int32
+            x-oapi-codegen-extra-tags:
+              validate: min=1
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Menu'
+      responses:
+        '200':
+          description: empty
+        default:
+          description: empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   schemas:
     Error:
@@ -477,7 +599,10 @@ components:
         type:
           type: string
           x-oapi-codegen-extra-tags:
-            validate: max=64
+            validate: oneof=page button
+          enum:
+            - page
+            - button
         path:
           type: string
           x-oapi-codegen-extra-tags:
@@ -515,10 +640,15 @@ components:
         - name
         - description
         - sequence
+        - type
+        - path
+        - property
+        - parent_id
+        - parent_path
         - status
         - created
         - updated
-        - menu
+        - resource
     
     Resource:
       properties:

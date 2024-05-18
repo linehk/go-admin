@@ -9,8 +9,11 @@ const (
 	UsernameOccupy int32 = 30000
 	UserNotExist   int32 = 30001
 
-	CodeOccupy   int32 = 40000
-	RoleNotExist int32 = 40001
+	RoleCodeOccupy int32 = 40000
+	RoleNotExist   int32 = 40001
+
+	MenuCodeOccupy int32 = 50000
+	MenuNotExist   int32 = 50001
 )
 
 var msg = map[int32]string{
@@ -22,8 +25,11 @@ var msg = map[int32]string{
 	UsernameOccupy: "username occupy",
 	UserNotExist:   "user not exist",
 
-	CodeOccupy:   "code occupy",
-	RoleNotExist: "role not exist",
+	RoleCodeOccupy: "role code occupy",
+	RoleNotExist:   "role not exist",
+
+	MenuCodeOccupy: "menu code occupy",
+	MenuNotExist:   "menu not exist",
 }
 
 func Msg(e int32) string {

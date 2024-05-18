@@ -15,6 +15,21 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (GET /api/v1/menus)
+	GetApiV1Menus(w http.ResponseWriter, r *http.Request, params GetApiV1MenusParams)
+
+	// (POST /api/v1/menus)
+	PostApiV1Menus(w http.ResponseWriter, r *http.Request)
+
+	// (DELETE /api/v1/menus/{id})
+	DeleteApiV1MenusId(w http.ResponseWriter, r *http.Request, id int32)
+
+	// (GET /api/v1/menus/{id})
+	GetApiV1MenusId(w http.ResponseWriter, r *http.Request, id int32)
+
+	// (PUT /api/v1/menus/{id})
+	PutApiV1MenusId(w http.ResponseWriter, r *http.Request, id int32)
+
 	// (GET /api/v1/roles)
 	GetApiV1Roles(w http.ResponseWriter, r *http.Request, params GetApiV1RolesParams)
 
@@ -54,6 +69,149 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetApiV1Menus operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1Menus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetApiV1MenusParams
+
+	// ------------- Required query parameter "codePath" -------------
+
+	if paramValue := r.URL.Query().Get("codePath"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "codePath"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "codePath", r.URL.Query(), &params.CodePath)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "codePath", Err: err})
+		return
+	}
+
+	// ------------- Required query parameter "name" -------------
+
+	if paramValue := r.URL.Query().Get("name"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "name"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiV1Menus(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostApiV1Menus operation middleware
+func (siw *ServerInterfaceWrapper) PostApiV1Menus(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostApiV1Menus(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteApiV1MenusId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiV1MenusId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApiV1MenusId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetApiV1MenusId operation middleware
+func (siw *ServerInterfaceWrapper) GetApiV1MenusId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiV1MenusId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PutApiV1MenusId operation middleware
+func (siw *ServerInterfaceWrapper) PutApiV1MenusId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int32
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutApiV1MenusId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // GetApiV1Roles operation middleware
 func (siw *ServerInterfaceWrapper) GetApiV1Roles(w http.ResponseWriter, r *http.Request) {
@@ -530,6 +688,11 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	m.HandleFunc("GET "+options.BaseURL+"/api/v1/menus", wrapper.GetApiV1Menus)
+	m.HandleFunc("POST "+options.BaseURL+"/api/v1/menus", wrapper.PostApiV1Menus)
+	m.HandleFunc("DELETE "+options.BaseURL+"/api/v1/menus/{id}", wrapper.DeleteApiV1MenusId)
+	m.HandleFunc("GET "+options.BaseURL+"/api/v1/menus/{id}", wrapper.GetApiV1MenusId)
+	m.HandleFunc("PUT "+options.BaseURL+"/api/v1/menus/{id}", wrapper.PutApiV1MenusId)
 	m.HandleFunc("GET "+options.BaseURL+"/api/v1/roles", wrapper.GetApiV1Roles)
 	m.HandleFunc("POST "+options.BaseURL+"/api/v1/roles", wrapper.PostApiV1Roles)
 	m.HandleFunc("DELETE "+options.BaseURL+"/api/v1/roles/{id}", wrapper.DeleteApiV1RolesId)

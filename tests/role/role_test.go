@@ -46,7 +46,7 @@ var (
 		Name:        "name1",
 		Description: "description1",
 		Sequence:    1,
-		Status:      controller.Enabled,
+		Status:      controller.RoleStatusEnabled,
 		Created:     "2024-04-04 13:56:35.671521",
 		Updated:     "2024-04-05 13:56:35.671521",
 		Menu: []controller.RoleMenu{
@@ -100,7 +100,7 @@ var (
 		Name:        "name2",
 		Description: "description2",
 		Sequence:    2,
-		Status:      controller.Enabled,
+		Status:      controller.RoleStatusEnabled,
 		Created:     "2024-03-04 13:56:35.671521",
 		Updated:     "2024-03-05 13:56:35.671521",
 		Menu: []controller.RoleMenu{
@@ -200,7 +200,7 @@ func TestGetApiV1Roles(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, tests.BaseURL+"api/v1/roles", nil)
 	params := controller.GetApiV1RolesParams{
 		Name:     "",
-		Status:   string(controller.Enabled),
+		Status:   string(controller.RoleStatusEnabled),
 		Current:  0,
 		PageSize: 10,
 	}

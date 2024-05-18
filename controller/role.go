@@ -49,7 +49,7 @@ func (a *API) PostApiV1Roles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exist {
-		Err(w, errcode.CodeOccupy)
+		Err(w, errcode.RoleCodeOccupy)
 		return
 	}
 
@@ -264,7 +264,7 @@ func (a *API) PutApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) 
 			return
 		}
 		if exist {
-			Err(w, errcode.CodeOccupy)
+			Err(w, errcode.RoleCodeOccupy)
 			return
 		}
 	}
@@ -296,7 +296,7 @@ func (a *API) PutApiV1RolesId(w http.ResponseWriter, r *http.Request, id int32) 
 			Err(w, errcode.Database)
 			return
 		}
-		
+
 		roleMenuList = append(roleMenuList, roleMenuResp(roleMenu))
 	}
 
@@ -318,7 +318,7 @@ func createRoleParams(req Role) (model.CreateRoleParams, error) {
 	params.Description = req.Description
 	params.Sequence = req.Sequence
 	if req.Status == "" {
-		req.Status = Enabled
+		req.Status = RoleStatusEnabled
 	}
 	params.Status = string(req.Status)
 	if req.Created == "" {

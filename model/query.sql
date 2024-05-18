@@ -143,6 +143,9 @@ WHERE id = $1;
 DELETE FROM role_menu
 WHERE role_id = $1;
 
+-- name: DeleteRoleMenuByMenuIdList :exec
+DELETE FROM role_menu
+WHERE menu_id = ANY($1::int[]);
 
 --------------------------------- Menu --------------------------------
 -- name: GetMenu :one
@@ -150,8 +153,16 @@ SELECT *
 FROM menu
 WHERE id = $1 LIMIT 1;
 
+-- name: ListChildID :many
+SELECT id
+FROM menu
+WHERE ($1::VARCHAR = '' OR $1::VARCHAR ILIKE $1 || '%');
+
 -- name: CheckMenuByID :one
 SELECT EXISTS (SELECT 1 FROM menu WHERE id = $1);
+
+-- name: CheckMenuByCodeAndParentID :one
+SELECT EXISTS (SELECT 1 FROM menu WHERE code = $1 AND parent_id = $2);
 
 -- name: CreateMenu :one
 INSERT INTO menu (code, name, description, sequence, type, path, property,
@@ -171,6 +182,9 @@ RETURNING *;
 DELETE FROM menu
 WHERE id = $1;
 
+-- name: DeleteMenuByIdList :exec
+DELETE FROM menu
+WHERE id = ANY($1::int[]);
 
 --------------------------------- Resource --------------------------------
 -- name: GetResource :one
@@ -204,3 +218,7 @@ WHERE id = $1;
 -- name: DeleteResourceByMenuID :exec
 DELETE FROM resource
 WHERE menu_id = $1;
+
+-- name: DeleteMenuByMenuIdList :exec
+DELETE FROM resource
+WHERE menu_id = ANY($1::int[]);

@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const checkMenuByCodeAndParentID = `-- name: CheckMenuByCodeAndParentID :one
+SELECT EXISTS (SELECT 1 FROM menu WHERE code = $1 AND parent_id = $2)
+`
+
+type CheckMenuByCodeAndParentIDParams struct {
+	Code     string
+	ParentID int32
+}
+
+func (q *Queries) CheckMenuByCodeAndParentID(ctx context.Context, arg CheckMenuByCodeAndParentIDParams) (bool, error) {
+	row := q.db.QueryRow(ctx, checkMenuByCodeAndParentID, arg.Code, arg.ParentID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const checkMenuByID = `-- name: CheckMenuByID :one
 SELECT EXISTS (SELECT 1 FROM menu WHERE id = $1)
 `
@@ -348,6 +364,26 @@ func (q *Queries) DeleteMenu(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteMenuByIdList = `-- name: DeleteMenuByIdList :exec
+DELETE FROM menu
+WHERE id = ANY($1::int[])
+`
+
+func (q *Queries) DeleteMenuByIdList(ctx context.Context, dollar_1 []int32) error {
+	_, err := q.db.Exec(ctx, deleteMenuByIdList, dollar_1)
+	return err
+}
+
+const deleteMenuByMenuIdList = `-- name: DeleteMenuByMenuIdList :exec
+DELETE FROM resource
+WHERE menu_id = ANY($1::int[])
+`
+
+func (q *Queries) DeleteMenuByMenuIdList(ctx context.Context, dollar_1 []int32) error {
+	_, err := q.db.Exec(ctx, deleteMenuByMenuIdList, dollar_1)
+	return err
+}
+
 const deleteResource = `-- name: DeleteResource :exec
 DELETE FROM resource
 WHERE id = $1
@@ -385,6 +421,16 @@ WHERE id = $1
 
 func (q *Queries) DeleteRoleMenu(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteRoleMenu, id)
+	return err
+}
+
+const deleteRoleMenuByMenuIdList = `-- name: DeleteRoleMenuByMenuIdList :exec
+DELETE FROM role_menu
+WHERE menu_id = ANY($1::int[])
+`
+
+func (q *Queries) DeleteRoleMenuByMenuIdList(ctx context.Context, dollar_1 []int32) error {
+	_, err := q.db.Exec(ctx, deleteRoleMenuByMenuIdList, dollar_1)
 	return err
 }
 
@@ -563,6 +609,32 @@ func (q *Queries) GetUserRole(ctx context.Context, id int32) (UserRole, error) {
 		&i.Updated,
 	)
 	return i, err
+}
+
+const listChildID = `-- name: ListChildID :many
+SELECT id
+FROM menu
+WHERE ($1::VARCHAR = '' OR $1::VARCHAR ILIKE $1 || '%')
+`
+
+func (q *Queries) ListChildID(ctx context.Context, dollar_1 string) ([]int32, error) {
+	rows, err := q.db.Query(ctx, listChildID, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var id int32
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listResourceByMenuIDList = `-- name: ListResourceByMenuIDList :many
